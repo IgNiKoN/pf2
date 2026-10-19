@@ -33,3 +33,17 @@ construction-platform/.DS_Store
 
 # Служебные каталоги инструментов
 .npm-cache-tmp/
+
+# ── Служебные артефакты: для работы приложения не нужны ──────────────────────
+# (сам код, конфиги сборки и миграции остаются в репозитории — без них это не проект)
+*.tsbuildinfo
+test-results/
+playwright-report/
+coverage/
+.dsh/
+.idea/
+.vscode/
+*.swp
+*.orig
+*.rej
+Thumbs.db
