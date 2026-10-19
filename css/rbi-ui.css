@@ -1,0 +1,316 @@
+/**
+ * RBI UI — общий слой примитивов и desktop-strip.
+ *
+ * Расширять постепенно при касании модулей (см. .cursor/rules/rbi-ui-design.mdc).
+ * Не переписывать весь Tailwind-markup «за один раз».
+ */
+
+:root {
+  /* Radii / chrome — источник: css/brand/rbi.css (pack). Здесь только размеры примитивов. */
+
+  /* Buttons */
+  --rbi-btn-pad-y: 0.4rem;
+  --rbi-btn-pad-x: 0.7rem;
+  --rbi-btn-fs: 11px;
+  --rbi-btn-fw: 750;
+
+  /* Cards */
+  --rbi-card-pad: 0.75rem;
+  --rbi-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+
+.rbi-btn,
+.audit-desk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: var(--rbi-btn-pad-y) var(--rbi-btn-pad-x);
+  border-radius: var(--rbi-radius-sm);
+  font-size: var(--rbi-btn-fs);
+  font-weight: var(--rbi-btn-fw);
+  line-height: 1.2;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-main, inherit);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.rbi-btn:hover,
+.audit-desk-btn:hover {
+  background: var(--hover-bg, color-mix(in srgb, var(--card-border) 35%, var(--card-bg)));
+}
+
+.rbi-btn--primary,
+.rbi-btn.primary,
+.audit-desk-btn.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.rbi-btn--primary:hover,
+.rbi-btn.primary:hover,
+.audit-desk-btn.primary:hover {
+  background: var(--primary-hover, var(--primary));
+  border-color: var(--primary-hover, var(--primary));
+}
+
+.rbi-btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+.rbi-btn--ghost:hover {
+  background: var(--hover-bg, color-mix(in srgb, var(--card-border) 35%, var(--card-bg)));
+  color: var(--text-main, inherit);
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────── */
+
+.rbi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-md);
+  box-shadow: var(--rbi-card-shadow);
+  padding: var(--rbi-card-pad);
+  box-sizing: border-box;
+}
+
+.rbi-card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.rbi-card--lg {
+  border-radius: var(--rbi-radius-lg);
+}
+
+/* ── Chips ───────────────────────────────────────────────────────────── */
+
+.rbi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--card-bg));
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg));
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.rbi-chip--muted {
+  border-color: var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-muted);
+}
+
+/* ── Desktop module strip (subtabs / audit topbar) ─────────────────────
+ * Sticky full-bleed 48px under desk topbar — один паттерн на модули.
+ */
+
+body.rbi-analytics-desktop-wide #analytics-subtabs-block,
+body.nav-pos-bottom.rbi-analytics-desktop-wide #analytics-subtabs-block,
+body.nav-pos-top.rbi-analytics-desktop-wide #analytics-subtabs-block,
+body.nav-pos-auto.rbi-analytics-desktop-wide #analytics-subtabs-block,
+body.rbi-engineer-desktop-wide #engineer-subtabs-block,
+body.nav-pos-bottom.rbi-engineer-desktop-wide #engineer-subtabs-block,
+body.nav-pos-top.rbi-engineer-desktop-wide #engineer-subtabs-block,
+body.nav-pos-auto.rbi-engineer-desktop-wide #engineer-subtabs-block,
+body.rbi-knowledge-desktop-wide #reference-subtabs-block,
+body.nav-pos-bottom.rbi-knowledge-desktop-wide #reference-subtabs-block,
+body.nav-pos-top.rbi-knowledge-desktop-wide #reference-subtabs-block,
+body.nav-pos-auto.rbi-knowledge-desktop-wide #reference-subtabs-block,
+body.rbi-audit-desktop-wide .audit-desk-topbar-strip,
+body.nav-pos-bottom.rbi-audit-desktop-wide .audit-desk-topbar-strip,
+body.nav-pos-top.rbi-audit-desktop-wide .audit-desk-topbar-strip,
+body.nav-pos-auto.rbi-audit-desktop-wide .audit-desk-topbar-strip,
+.rbi-desk-module-strip {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  width: calc(100% + 2rem) !important;
+  max-width: none !important;
+  margin: 0 -1rem !important;
+  padding: 0 !important;
+  z-index: 40 !important;
+  transform: none !important;
+  background: var(--card-bg) !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  transition: none !important;
+}
+
+body.rbi-analytics-desktop-wide.has-desk-topbar #analytics-subtabs-block,
+body.nav-pos-bottom.rbi-analytics-desktop-wide.has-desk-topbar #analytics-subtabs-block,
+body.nav-pos-top.rbi-analytics-desktop-wide.has-desk-topbar #analytics-subtabs-block,
+body.nav-pos-auto.rbi-analytics-desktop-wide.has-desk-topbar #analytics-subtabs-block,
+body.rbi-engineer-desktop-wide.has-desk-topbar #engineer-subtabs-block,
+body.nav-pos-bottom.rbi-engineer-desktop-wide.has-desk-topbar #engineer-subtabs-block,
+body.nav-pos-top.rbi-engineer-desktop-wide.has-desk-topbar #engineer-subtabs-block,
+body.nav-pos-auto.rbi-engineer-desktop-wide.has-desk-topbar #engineer-subtabs-block,
+body.rbi-knowledge-desktop-wide.has-desk-topbar #reference-subtabs-block,
+body.nav-pos-bottom.rbi-knowledge-desktop-wide.has-desk-topbar #reference-subtabs-block,
+body.nav-pos-top.rbi-knowledge-desktop-wide.has-desk-topbar #reference-subtabs-block,
+body.nav-pos-auto.rbi-knowledge-desktop-wide.has-desk-topbar #reference-subtabs-block,
+body.rbi-audit-desktop-wide.has-desk-topbar .audit-desk-topbar-strip,
+body.nav-pos-bottom.rbi-audit-desktop-wide.has-desk-topbar .audit-desk-topbar-strip,
+body.nav-pos-top.rbi-audit-desktop-wide.has-desk-topbar .audit-desk-topbar-strip,
+body.nav-pos-auto.rbi-audit-desktop-wide.has-desk-topbar .audit-desk-topbar-strip,
+body.has-desk-topbar .rbi-desk-module-strip {
+  top: var(--desk-topbar-h) !important;
+}
+
+body.rbi-analytics-desktop-wide #analytics-subtabs-block > div,
+body.rbi-engineer-desktop-wide #engineer-subtabs-block > div,
+body.rbi-knowledge-desktop-wide #reference-subtabs-block > div,
+body.rbi-audit-desktop-wide .audit-desk-topbar-strip-inner,
+.rbi-desk-module-strip-inner {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  gap: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: var(--rbi-strip-h) !important;
+  padding: 0 !important;
+  background: var(--card-bg) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow-x: auto !important;
+  backdrop-filter: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Audit strip: brand + selector layout (не равные subtabs) */
+body.rbi-audit-desktop-wide .audit-desk-topbar-strip-inner {
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.75rem !important;
+  padding: 0 1rem !important;
+}
+
+/* Desktop subtab buttons — общий вид */
+body.rbi-analytics-desktop-wide #analytics-subtabs-block .sub-tab-btn,
+body.rbi-engineer-desktop-wide #engineer-subtabs-block .sub-tab-btn,
+body.rbi-knowledge-desktop-wide #reference-subtabs-block .sub-tab-btn {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: var(--rbi-subtab-gap) !important;
+  font-size: var(--rbi-subtab-fs) !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  padding: 0 var(--rbi-subtab-pad-x) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-bottom: 2px solid transparent !important;
+  color: var(--text-muted) !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-analytics-desktop-wide #analytics-subtabs-block .sub-tab-btn svg,
+body.rbi-engineer-desktop-wide #engineer-subtabs-block .sub-tab-btn svg,
+body.rbi-knowledge-desktop-wide #reference-subtabs-block .sub-tab-btn svg {
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Канон активного: .active */
+body.rbi-analytics-desktop-wide #analytics-subtabs-block .sub-tab-btn.active,
+body.rbi-engineer-desktop-wide #engineer-subtabs-block .sub-tab-btn.active,
+body.rbi-knowledge-desktop-wide #reference-subtabs-block .sub-tab-btn.active {
+  background: transparent !important;
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+
+/* ── Desktop modals (≥1280) ────────────────────────────────────────────
+ * Мобильные max-w-sm/md/lg выглядят как узкая колонка на ПК.
+ * Не трогаем разметку — поднимаем потолок ширины у панелей в fixed-оверлеях.
+ */
+@media (min-width: 1280px) {
+  :root {
+    --rbi-modal-sm: 36rem;   /* was ~24rem, затем 32rem */
+    --rbi-modal-md: 46rem;   /* was ~28rem, затем 40rem */
+    --rbi-modal-lg: 56rem;   /* was ~32rem, затем 48rem */
+    --rbi-modal-xl: 64rem;   /* was ~36rem, затем 56rem */
+    --rbi-modal-2xl: 72rem;  /* was ~42rem, затем 64rem */
+  }
+
+  .modal-content {
+    max-width: min(var(--rbi-modal-md), calc(100vw - 3rem)) !important;
+  }
+
+  /* Панель — прямой потомок fixed overlay (типичный паттерн index/JS) */
+  .fixed.inset-0 > .max-w-sm,
+  .fixed.inset-0 > [class*="max-w-sm"]:not([class*="max-w-md"]):not([class*="max-w-lg"]):not([class*="max-w-xl"]):not([class*="max-w-2xl"]),
+  .modal-overlay > .max-w-sm {
+    max-width: min(var(--rbi-modal-sm), calc(100vw - 3rem)) !important;
+  }
+
+  .fixed.inset-0 > .max-w-md,
+  .fixed.inset-0 > [class*="max-w-md"]:not([class*="max-w-lg"]):not([class*="max-w-xl"]):not([class*="max-w-2xl"]),
+  .modal-overlay > .max-w-md {
+    max-width: min(var(--rbi-modal-md), calc(100vw - 3rem)) !important;
+  }
+
+  .fixed.inset-0 > .max-w-lg,
+  .fixed.inset-0 > [class*="max-w-lg"]:not([class*="max-w-xl"]):not([class*="max-w-2xl"]),
+  .modal-overlay > .max-w-lg {
+    max-width: min(var(--rbi-modal-lg), calc(100vw - 3rem)) !important;
+  }
+
+  .fixed.inset-0 > .max-w-xl,
+  .fixed.inset-0 > [class*="max-w-xl"]:not([class*="max-w-2xl"]),
+  .modal-overlay > .max-w-xl {
+    max-width: min(var(--rbi-modal-xl), calc(100vw - 3rem)) !important;
+  }
+
+  .fixed.inset-0 > .max-w-2xl,
+  .fixed.inset-0 > [class*="max-w-2xl"],
+  .modal-overlay > .max-w-2xl {
+    max-width: min(var(--rbi-modal-2xl), calc(100vw - 3rem)) !important;
+  }
+
+  /* Центрирование: на mobile часто items-end (sheet), на desk — по центру */
+  .fixed.inset-0.items-end,
+  .fixed.inset-0[class*="items-end"] {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1.5rem !important;
+  }
+
+  .fixed.inset-0.items-end > [class*="rounded-t"],
+  .fixed.inset-0[class*="items-end"] > [class*="rounded-t-"] {
+    border-radius: var(--rbi-radius-lg) !important;
+    margin-bottom: 0 !important;
+    transform: none !important;
+  }
+}

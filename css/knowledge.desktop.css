@@ -1,0 +1,3901 @@
+/**
+ * Desktop-only styles for База знаний (≥1280, .rbi-knowledge-desktop-wide).
+ *
+ * Ч/л visual system:
+ * - Toolbar: search + constructor/manage (no buried accordion)
+ * - Rail: checklist library
+ * - Viewer: requirements document (readable column + linked docs)
+ */
+
+#app-root.rbi-knowledge-desktop-wide {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar {
+  padding-top: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #app-root,
+body.rbi-knowledge-desktop-wide.has-desk-topbar #app-root.rbi-knowledge-desktop-wide {
+  padding-top: var(--desk-topbar-h) !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #app-content {
+  padding-top: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #tab-reference {
+  padding-bottom: 1.25rem !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body.rbi-knowledge-desktop-wide #tab-reference > .ref-sub-section {
+  max-width: none !important;
+  width: 100% !important;
+  margin-top: 0.75rem !important;
+}
+
+/* Sticky knowledge subtabs — css/rbi-ui.css
+ * Ignore leftover bg-white; only .active drives underline */
+body.rbi-knowledge-desktop-wide #reference-subtabs-block .sub-tab-btn.bg-white,
+body.rbi-knowledge-desktop-wide #reference-subtabs-block .sub-tab-btn.text-indigo-600 {
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  box-shadow: none !important;
+  border-bottom-color: transparent !important;
+}
+
+body.rbi-knowledge-desktop-wide #reference-subtabs-block .sub-tab-btn.active {
+  background: transparent !important;
+  color: var(--primary) !important;
+  box-shadow: none !important;
+  border-bottom-color: var(--primary) !important;
+  font-weight: 700 !important;
+}
+
+/* ── Ч/л host: chrome pinned under subtabs, stage scrolls (как История) ─ */
+
+body.rbi-knowledge-desktop-wide #tab-reference:has(#ref-sub-checklists.kb-desk-checklists:not(.hidden)) > .ref-sub-section {
+  margin-top: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists.kb-desk-checklists:not(.hidden) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  margin-top: 0 !important;
+  /* overflow:hidden ломает sticky у chrome — скролл страницы ок, chrome липнет под сабтабами */
+  overflow: visible !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+body.rbi-knowledge-desktop-wide:not(.has-desk-topbar) #ref-sub-checklists.kb-desk-checklists:not(.hidden) {
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists.hidden {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists #reference-items.kb-desk-items-source[hidden] {
+  display: none !important;
+}
+
+/* Chrome: поиск + CTA — sticky сразу под сабтабами (не заезжает под навигацию) */
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-chrome {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 48px !important; /* высота #reference-subtabs-block */
+  z-index: 35 !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-top: 0 !important;
+  border-radius: 0 0 12px 12px !important;
+  box-shadow: 0 8px 16px -12px rgba(15, 23, 42, 0.18) !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-checklists .kb-desk-cl-chrome {
+  top: calc(var(--desk-topbar-h, 52px) + var(--rbi-strip-h, 48px)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 10px 12px 12px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters > .relative.flex.items-center.bg-indigo-50,
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters > .kb-desk-cl-src-hidden {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters > .relative.mb-2 {
+  flex: 1 1 220px !important;
+  margin: 0 !important;
+  min-width: 180px !important;
+  order: 1 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters #ref-search {
+  height: 38px !important;
+  font-size: 13px !important;
+  padding-left: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  background: var(--bg-main) !important;
+  border-radius: var(--rbi-radius-md) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters > .relative.mb-2 > span.absolute {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-actions {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 6px !important;
+  order: 2 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn {
+  height: 38px !important;
+  min-width: 36px !important;
+  padding: 0 12px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+  color: var(--text-main) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn:hover {
+  background: var(--hover-bg) !important;
+  border-color: var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-manage {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  height: 42px !important;
+  min-width: 148px !important;
+  padding: 0 14px 0 12px !important;
+  background: #fff7ed !important;
+  border: 1px solid #fdba74 !important;
+  color: #9a3412 !important;
+  border-radius: var(--rbi-radius-md) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-manage:hover {
+  background: #ffedd5 !important;
+  border-color: #fb923c !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-manage.is-active {
+  background: #ffedd5 !important;
+  border-color: #f97316 !important;
+  box-shadow: inset 0 0 0 1px #f97316 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-manage-icon {
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-manage-text {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.01em !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters #ref-manage-toggle-icon {
+  display: none !important;
+}
+
+/* Два больших CTA: создать / копия системного */
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-ctas {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+  flex: 1 0 100% !important;
+  order: 3 !important;
+  width: 100% !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-cta {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 2px !important;
+  min-height: 52px !important;
+  padding: 10px 14px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  font: inherit !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-cta-create {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-cta-create:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-cta-create .kb-desk-cl-cta-sub {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-clone {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--card-bg)) !important;
+  color: #312e81 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-clone:hover:not(.is-disabled) {
+  background: color-mix(in srgb, var(--primary) 22%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-clone.is-disabled,
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-clone:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-cta-title {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-cta-sub,
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-btn-sub {
+  display: block !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  color: var(--text-muted) !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-cta-hint {
+  grid-column: 1 / -1 !important;
+  margin: 0 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  line-height: 1.35 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-clone-select-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+/* ⚙-панель: изменить/удалить свои */
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters #ref-manage-body.kb-desk-cl-manage-panel {
+  flex: 1 0 100% !important;
+  order: 4 !important;
+  width: 100% !important;
+  display: block !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+  border: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters #ref-manage-body.kb-desk-cl-manage-panel.kb-desk-cl-manage-open {
+  max-height: 200px !important;
+  opacity: 1 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  margin-top: 4px !important;
+  padding-top: 4px !important;
+  pointer-events: auto !important;
+  border-top: 1px solid var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters #ref-manage-body.kb-desk-cl-manage-panel > .grid {
+  display: none !important; /* кнопки уже в .kb-desk-cl-actions (те же data-reference-action) */
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-filters #settings-user-templates-list {
+  max-height: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: 0 !important;
+}
+
+/* Дубль «Копия» из mobile-панели скрыт — CTA уже в .kb-desk-cl-ctas */
+body.rbi-knowledge-desktop-wide #ref-sub-checklists #settings-user-templates-list > .mb-3.p-2.bg-indigo-50 {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-empty {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  padding: 8px 10px 12px !important;
+  line-height: 1.35 !important;
+}
+
+/* Split — под sticky-chrome; высота ограничена viewport, иначе rail растёт и скролл не включается */
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-split {
+  display: grid !important;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr) !important;
+  gap: 12px !important;
+  flex: 1 1 auto !important;
+  min-height: calc(100vh - 280px) !important;
+  height: calc(100vh - 280px) !important;
+  max-height: calc(100vh - 280px) !important;
+  align-items: stretch !important;
+  margin-top: 12px !important;
+  padding: 0 0 8px !important;
+  overflow: hidden !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-checklists .kb-desk-split {
+  min-height: calc(100vh - 320px) !important;
+  height: calc(100vh - 320px) !important;
+  max-height: calc(100vh - 320px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 12px 10px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: 100% !important;
+  align-self: stretch !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-viewer {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: 100% !important;
+  align-self: stretch !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-head {
+  padding: 4px 8px 10px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  margin-bottom: 4px !important;
+  flex-shrink: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-head-title {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-head-sub {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  margin-top: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  margin-bottom: 8px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-section-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  padding: 8px 8px 4px !important;
+  border: 0 !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  font: inherit !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-section-toggle:hover {
+  opacity: 0.85 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-section-name {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-muted) !important;
+  line-height: 1.25 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-section-count {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: var(--text-muted) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-section-chevron {
+  flex: 0 0 auto !important;
+  font-size: 11px !important;
+  color: var(--text-muted) !important;
+  transition: transform 0.15s ease !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-section:not(.is-open) .kb-desk-rail-section-chevron {
+  transform: rotate(-90deg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-section-body {
+  display: none !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-rail-section.is-open .kb-desk-rail-section-body {
+  display: flex !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-list-row {
+  display: block !important;
+  width: 100% !important;
+  text-align: left !important;
+  border: 0 !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  border-radius: var(--rbi-radius-md) !important;
+  padding: 10px 10px !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-list-row:hover {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-list-row.is-active {
+  background: color-mix(in srgb, var(--primary) 22%, var(--card-bg)) !important;
+  color: var(--primary) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-list-text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-list-title {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-list-sub {
+  font-size: 11px !important;
+  color: var(--text-muted) !important;
+  font-weight: 600 !important;
+}
+
+/* Viewer hosts mobile #reference-items (renderReferenceTab) as-is */
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-viewer-body.kb-desk-cl-mobile-host {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: 12px 14px 20px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists #reference-items.kb-desk-items-host {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: 56rem !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists #reference-items.kb-desk-items-host .norm-ref {
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-viewer-empty {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  padding: 24px !important;
+  text-align: center !important;
+  color: var(--text-muted) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+/* Legacy desk-doc styles (unused after mobile steal; kept harmless) */
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-doc-head {
+  flex-shrink: 0 !important;
+  padding: 18px 28px 14px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-doc-head-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-bottom: 6px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-doc-kicker {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  color: var(--primary) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-doc-kind {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--text-muted) !important;
+  background: var(--hover-bg) !important;
+  border-radius: 999px !important;
+  padding: 3px 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-doc-title {
+  margin: 0 !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  color: var(--text-main) !important;
+  max-width: 52rem !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-doc-stats {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 14px !important;
+  margin-top: 10px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-doc-stats b {
+  color: var(--text-main) !important;
+  font-weight: 800 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-viewer-body.kb-desk-cl-doc {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: 0 !important;
+  background: var(--bg-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-paper {
+  max-width: 920px !important;
+  margin: 0 auto !important;
+  padding: 20px 28px 40px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 22px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-sec-label {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-muted) !important;
+  margin-bottom: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-links-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-linkchip {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 2px !important;
+  max-width: 280px !important;
+  text-align: left !important;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--card-bg)) !important;
+  background: var(--card-bg) !important;
+  border-radius: var(--rbi-radius-md) !important;
+  padding: 10px 12px !important;
+  cursor: pointer !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-linkchip:hover {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-linkchip.is-pdf {
+  border-color: #fecaca !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-linkchip-type {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  color: var(--primary) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-linkchip.is-pdf .kb-desk-cl-linkchip-type {
+  color: #dc2626 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-linkchip-title {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  line-height: 1.3 !important;
+  word-break: break-word !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-muted {
+  font-size: 13px !important;
+  color: var(--text-muted) !important;
+  font-weight: 600 !important;
+}
+
+/* Requirements table rows */
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-group-title {
+  margin: 0 0 10px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-table {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  overflow: hidden !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-row {
+  display: grid !important;
+  grid-template-columns: 56px minmax(0, 1fr) 140px !important;
+  gap: 14px !important;
+  align-items: start !important;
+  padding: 16px 18px !important;
+  border-bottom: 1px solid var(--hover-bg) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-row:last-child {
+  border-bottom: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-weight {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding-top: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-num {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-bw {
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  color: var(--text-muted) !important;
+  background: var(--hover-bg) !important;
+  border-radius: var(--rbi-radius-sm) !important;
+  padding: 2px 6px !important;
+  width: fit-content !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-main {
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-name {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  color: var(--text-main) !important;
+  margin-bottom: 6px !important;
+  word-break: break-word !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-norm {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  color: var(--text-muted) !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-side {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-docbtn {
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-md) !important;
+  padding: 8px 10px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  background: var(--card-bg) !important;
+  color: var(--text-main) !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-docbtn.is-bound {
+  color: var(--primary-hover) !important;
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--card-bg)) !important;
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-docbtn.is-twi {
+  color: #fff !important;
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-docbtn.is-search {
+  color: #0369a1 !important;
+  border-color: #bae6fd !important;
+  background: #f0f9ff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-nolink {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--card-border) !important;
+  text-align: center !important;
+  padding-top: 6px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-viewer-empty {
+  padding: 48px 24px !important;
+  text-align: center !important;
+  color: var(--text-muted) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 1100px) {
+  body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-row {
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+  }
+
+  body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-req-side {
+    grid-column: 2 !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+/* ── НД (docs) desktop ───────────────────────────────────────────────── */
+
+body.rbi-knowledge-desktop-wide #tab-reference:has(#ref-sub-docs.kb-desk-docs:not(.hidden)) > .ref-sub-section {
+  margin-top: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs.kb-desk-docs:not(.hidden) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  margin-top: 0 !important;
+  overflow: visible !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs.hidden {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-chrome {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 48px !important;
+  z-index: 35 !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-top: 0 !important;
+  border-radius: 0 0 10px 10px !important;
+  box-shadow: 0 6px 14px -12px rgba(15, 23, 42, 0.18) !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-docs .kb-desk-docs-chrome {
+  top: calc(var(--desk-topbar-h, 52px) + var(--rbi-strip-h, 48px)) !important;
+}
+
+/* Две строки: 1) поиск + действия  2) типы + мои/офлайн */
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters {
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters > div.flex {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-row1 {
+  justify-content: space-between !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-row2 {
+  justify-content: space-between !important;
+  padding-top: 8px !important;
+  border-top: 1px solid var(--bg-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters .kb-desk-docs-search-wrap {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  position: relative !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters .kb-desk-docs-search-wrap > span.absolute {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left: 12px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters #doc-search-input {
+  height: 36px !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  padding-left: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  background: var(--bg-main) !important;
+  border-radius: var(--rbi-radius-md) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters .kb-desk-docs-chips,
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters #doc-filters-container {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border: 0 !important;
+  border-top: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters .doc-filter-btn {
+  height: 32px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-tools {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-left: auto !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters .kb-desk-docs-owner {
+  margin: 0 !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters .kb-desk-docs-owner > span {
+  font-size: 10px !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* View mode / mobile CTA — скрыть */
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters #docs-view-mode-toggle,
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters .kb-desk-docs-src-hidden {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters button[onclick*="downloadMissingCloudFiles"] {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters button[onclick*="openAiDocChat"],
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters button[onclick*="openAddDocModal"],
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters button[onclick*="exportDocsJsCode"],
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters button[data-action="openAiDocChat"]:not(.kb-desk-docs-btn),
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters button[data-knowledge-action="openAddDocModal"]:not(.kb-desk-docs-btn),
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-filters button[data-knowledge-action="exportDocsJsCode"]:not(.kb-desk-docs-btn) {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-actions {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-btn:hover {
+  background: var(--bg-main) !important;
+  border-color: var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-btn-primary:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-btn-ai {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--card-bg)) !important;
+  color: var(--primary-hover) !important;
+  box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.12) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-btn-ai:hover {
+  background: color-mix(in srgb, var(--primary) 22%, var(--card-bg)) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+/* Split: список слева / PDF справа */
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-split {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) !important;
+  gap: 12px !important;
+  flex: 1 1 auto !important;
+  min-height: calc(100vh - 220px) !important;
+  margin-top: 10px !important;
+  padding: 0 0 16px !important;
+  align-items: stretch !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-docs .kb-desk-docs-split {
+  min-height: calc(100vh - 260px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs #docs-list-container.kb-desk-docs-list-source[hidden] {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 10px 8px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100vh - 240px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-head {
+  padding: 4px 8px 10px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  margin-bottom: 6px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-head-title {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-head-sub {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  margin-top: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-section {
+  margin-bottom: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 8px 8px 4px !important;
+  border: 0 !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  text-align: left !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-name {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-count {
+  font-weight: 800 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-chevron {
+  font-size: 11px !important;
+  color: var(--text-muted) !important;
+  transition: transform 0.15s ease !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-section:not(.is-open) .kb-desk-docs-rail-chevron {
+  transform: rotate(-90deg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-body {
+  display: none !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-section.is-open .kb-desk-docs-rail-body {
+  display: flex !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  gap: 2px !important;
+  width: 100% !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: transparent !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row:hover {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row.is-active {
+  background: color-mix(in srgb, var(--primary) 22%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row-main {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  text-align: left !important;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: var(--rbi-radius-md) !important;
+  padding: 10px 8px 10px 10px !important;
+  cursor: pointer !important;
+  color: var(--text-main) !important;
+  font: inherit !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row.is-active .kb-desk-docs-rail-row-main {
+  color: var(--primary) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-open {
+  flex: 0 0 auto !important;
+  align-self: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  margin-right: 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  cursor: pointer !important;
+  opacity: 0.55 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row:hover .kb-desk-docs-rail-open,
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row.is-active .kb-desk-docs-rail-open {
+  opacity: 1 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-open:hover {
+  background: var(--card-bg) !important;
+  color: var(--primary) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row-code {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row-title {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  line-height: 1.35 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row.is-active .kb-desk-docs-rail-row-title {
+  color: var(--primary-hover) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-row-meta {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-rail-empty {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  padding: 8px 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100vh - 240px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-head {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-head-main {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-kicker {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--primary) !important;
+  margin-bottom: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-title {
+  margin: 0 !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: var(--text-main) !important;
+  line-height: 1.25 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-sub {
+  margin: 2px 0 0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  line-height: 1.35 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+  justify-content: flex-end !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-btn {
+  height: 30px !important;
+  padding: 0 10px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--bg-main) !important;
+  color: var(--text-main) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-btn.is-muted {
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-pdf-frame {
+  flex: 1 1 auto !important;
+  min-height: 420px !important;
+  position: relative !important;
+  background: var(--hover-bg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-pdf-iframe {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-pdf-loading,
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-empty {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  height: 100% !important;
+  min-height: 280px !important;
+  padding: 24px !important;
+  text-align: center !important;
+  color: var(--text-muted) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-empty-hint {
+  font-size: 12px !important;
+  color: var(--card-border) !important;
+  margin: 0 !important;
+}
+
+/* ── TWI desktop ─────────────────────────────────────────────────────── */
+
+body.rbi-knowledge-desktop-wide #tab-reference:has(#ref-sub-twi.kb-desk-twi:not(.hidden)) > .ref-sub-section {
+  margin-top: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi.kb-desk-twi:not(.hidden) {
+  display: block !important;
+  margin-top: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi.hidden {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi.kb-desk-twi #twi-list-view {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-chrome {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 48px !important;
+  z-index: 35 !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-top: 0 !important;
+  border-radius: 0 0 10px 10px !important;
+  box-shadow: 0 6px 14px -12px rgba(15, 23, 42, 0.18) !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-twi .kb-desk-twi-chrome {
+  top: calc(var(--desk-topbar-h, 52px) + var(--rbi-strip-h, 48px)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-filters {
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-filters > div.flex,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-filters > .flex.flex-col {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-row1 {
+  justify-content: space-between !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-row2 {
+  justify-content: space-between !important;
+  padding-top: 8px !important;
+  border-top: 1px solid var(--bg-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-search-wrap {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  position: relative !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-search-wrap > span.absolute {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left: 12px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi #twi-search-input {
+  height: 36px !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  padding-left: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  background: var(--bg-main) !important;
+  border-radius: var(--rbi-radius-md) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-actions {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  line-height: 1 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-btn:hover {
+  background: var(--bg-main) !important;
+  border-color: var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-btn-primary:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-chips,
+body.rbi-knowledge-desktop-wide #ref-sub-twi #twi-type-filters {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  border: 0 !important;
+  border-bottom: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-chips .kb-type-chip {
+  height: 32px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-tools {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-left: 0 !important;
+}
+
+/* Между чипами и «Только мои»: Магия TWI с переливающимся индикатором */
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  height: 32px !important;
+  padding: 0 12px 0 10px !important;
+  margin-left: auto !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid rgba(167, 139, 250, 0.55) !important;
+  background: linear-gradient(
+    110deg,
+    var(--primary) 0%,
+    #7c3aed 28%,
+    #db2777 55%,
+    var(--primary) 78%,
+    var(--primary) 100%
+  ) !important;
+  background-size: 220% 100% !important;
+  animation: kb-desk-twi-magic-flow 4.5s linear infinite !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px -6px rgba(99, 102, 241, 0.55) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic-btn:not(.has-candidates) {
+  opacity: 0.78 !important;
+  filter: saturate(0.85) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic-btn:hover {
+  filter: brightness(1.06) !important;
+  opacity: 1 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic-btn.is-open {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.55),
+    0 4px 14px -6px rgba(99, 102, 241, 0.7) !important;
+  filter: brightness(1.08) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic-dot {
+  width: 9px !important;
+  height: 9px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+  background: linear-gradient(
+    135deg,
+    #fef08a,
+    #f9a8d4,
+    #c4b5fd,
+    #67e8f9,
+    #fef08a
+  ) !important;
+  background-size: 220% 220% !important;
+  animation: kb-desk-twi-magic-shimmer 2.8s ease-in-out infinite !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.35),
+    0 0 10px rgba(250, 204, 21, 0.55) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic-label {
+  letter-spacing: 0.02em !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic-count {
+  min-width: 18px !important;
+  height: 18px !important;
+  padding: 0 5px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+@keyframes kb-desk-twi-magic-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 220% 50%; }
+}
+
+@keyframes kb-desk-twi-magic-shimmer {
+  0% { background-position: 0% 40%; }
+  50% { background-position: 100% 60%; }
+  100% { background-position: 0% 40%; }
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-owner {
+  margin: 0 !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-owner > span,
+body.rbi-knowledge-desktop-wide #ref-sub-twi #twi-toggle-label {
+  font-size: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi #twi-view-mode-toggle,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-src-hidden,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-chrome > [data-knowledge-action="toggleTwiManagePanel"],
+body.rbi-knowledge-desktop-wide #ref-sub-twi #twi-manage-body {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-filters button[onclick*="downloadMissingCloudFiles"] {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic {
+  display: grid !important;
+  grid-template-rows: 1fr !important;
+  margin: 10px 0 0 !important;
+  overflow: hidden !important;
+  opacity: 1 !important;
+  max-height: 1200px !important;
+  transition:
+    grid-template-rows 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    max-height 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    margin 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.26s ease !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic > * {
+  min-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  transition:
+    transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.26s ease !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic.is-hidden {
+  grid-template-rows: 0fr !important;
+  max-height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic.is-hidden > * {
+  transform: translateY(-10px) !important;
+  opacity: 0.35 !important;
+}
+
+/* Внутренний mobile-collapse не мешает выезду host */
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic #twi-magic-block,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-magic #twi-magic-block .magic-content-wrapper {
+  transition: none !important;
+  margin: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-split {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) !important;
+  gap: 12px !important;
+  min-height: calc(100vh - 260px) !important;
+  margin-top: 10px !important;
+  padding: 0 0 16px !important;
+  align-items: stretch !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-twi .kb-desk-twi-split {
+  min-height: calc(100vh - 300px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi #twi-cards-container.kb-desk-twi-list-source[hidden] {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 10px 8px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100vh - 260px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-head {
+  padding: 4px 8px 10px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  margin-bottom: 6px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-head-title {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-head-sub {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  margin-top: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-section {
+  margin-bottom: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 8px 8px 4px !important;
+  border: 0 !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  text-align: left !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-name {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-section.is-inspector .kb-desk-twi-rail-name {
+  color: #2563eb !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-section.is-worker .kb-desk-twi-rail-name {
+  color: #ea580c !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-section.is-pdf .kb-desk-twi-rail-name {
+  color: #dc2626 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-section.is-inspector > .kb-desk-twi-rail-toggle {
+  border-left: 3px solid #3b82f6 !important;
+  padding-left: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-section.is-worker > .kb-desk-twi-rail-toggle {
+  border-left: 3px solid #f97316 !important;
+  padding-left: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-section.is-pdf > .kb-desk-twi-rail-toggle {
+  border-left: 3px solid #ef4444 !important;
+  padding-left: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-chevron {
+  font-size: 11px !important;
+  color: var(--text-muted) !important;
+  transition: transform 0.15s ease !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-section:not(.is-open) .kb-desk-twi-rail-chevron {
+  transform: rotate(-90deg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-body {
+  display: none !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-section.is-open .kb-desk-twi-rail-body {
+  display: flex !important;
+}
+
+/* Вид работ внутри типа — группа; карты ниже визуально вложены */
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-work {
+  margin: 4px 0 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-work-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  padding: 7px 8px !important;
+  border: 0 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: color-mix(in srgb, var(--text-main) 6%, var(--card-bg)) !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  text-align: left !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-work-toggle:hover {
+  background: color-mix(in srgb, var(--text-main) 10%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-work-name {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: var(--text-main) !important;
+  line-height: 1.35 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-work-count {
+  flex: 0 0 auto !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: var(--text-muted) !important;
+  background: var(--card-border) !important;
+  border-radius: 999px !important;
+  padding: 1px 7px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-work-chevron {
+  flex: 0 0 auto !important;
+  font-size: 10px !important;
+  color: var(--text-muted) !important;
+  transition: transform 0.15s ease !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-work:not(.is-open) .kb-desk-twi-work-chevron {
+  transform: rotate(-90deg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-work-body {
+  display: none !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  margin: 4px 0 0 !important;
+  padding: 0 0 2px 10px !important;
+  border-left: 2px solid color-mix(in srgb, var(--text-muted) 35%, transparent) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-work.is-open .kb-desk-twi-work-body {
+  display: flex !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-row {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  width: 100% !important;
+  text-align: left !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  border-radius: var(--rbi-radius-md) !important;
+  padding: 7px 8px !important;
+  cursor: pointer !important;
+  color: var(--text-main) !important;
+  font: inherit !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-row:hover {
+  background: color-mix(in srgb, var(--primary) 10%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-row.is-active {
+  background: color-mix(in srgb, var(--primary) 16%, var(--card-bg)) !important;
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--card-bg)) !important;
+  color: var(--primary) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-row-title {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-row.is-active .kb-desk-twi-rail-row-title {
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-rail-row-meta {
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  color: color-mix(in srgb, var(--text-muted) 80%, transparent) !important;
+  line-height: 1.35 !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  overflow: visible !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: calc(100vh - 260px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-head {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 4px !important;
+  padding: 10px 14px 12px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-head-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-kicker {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--primary) !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-title {
+  margin: 0 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  line-height: 1.35 !important;
+  word-break: break-word !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-norm {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  color: var(--text-muted) !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  width: 100% !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  flex: 0 0 auto !important;
+  justify-content: flex-end !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-btn {
+  height: 30px !important;
+  padding: 0 10px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--bg-main) !important;
+  color: var(--text-main) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-btn.is-muted {
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-body {
+  padding: 14px 16px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photos {
+  display: grid !important;
+  gap: 14px !important;
+  width: 100% !important;
+}
+
+/* Всегда слева/справа (OK | Брак), независимо от ориентации */
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photos--side,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photos--pair-portrait,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photos--pair-landscape,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photos--mixed,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photos--stack {
+  grid-template-columns: 1fr 1fr !important;
+  align-items: start !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  overflow: hidden !important;
+  border: 2px solid #22c55e !important;
+  background: color-mix(in srgb, var(--text-main) 4%, transparent) !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  width: 100% !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo-bad {
+  border-color: #ef4444 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo-frame {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+}
+
+/* Портрет — крупно по высоте, пропорции сохранены */
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo--portrait .kb-desk-twi-photo-frame {
+  min-height: 420px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo--portrait img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 560px !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+/* В паре портретов чуть компактнее, но всё ещё крупно */
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photos--pair-portrait .kb-desk-twi-photo--portrait .kb-desk-twi-photo-frame {
+  min-height: 360px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photos--pair-portrait .kb-desk-twi-photo--portrait img {
+  max-height: 480px !important;
+}
+
+/* Альбом / квадрат — ширина на всю колонку */
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo--landscape .kb-desk-twi-photo-frame,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo--square .kb-desk-twi-photo-frame {
+  min-height: 220px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo--landscape img,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo--square img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 380px !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo-label {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1 !important;
+  padding: 8px 10px !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: #fff !important;
+  background: linear-gradient(to bottom, rgba(22, 163, 74, 0.92), transparent) !important;
+  text-align: left !important;
+  pointer-events: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo-bad .kb-desk-twi-photo-label {
+  background: linear-gradient(to bottom, rgba(220, 38, 38, 0.92), transparent) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo-empty {
+  min-height: 280px !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  border: 2px dashed #86efac !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #16a34a !important;
+  background: #f0fdf4 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-photo-empty.bad {
+  border-color: #fca5a5 !important;
+  color: #dc2626 !important;
+  background: #fef2f2 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-block {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 12px 14px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-block h3 {
+  margin: 0 0 8px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-block p {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+  line-height: 1.5 !important;
+  white-space: pre-wrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 12px 14px !important;
+  border-left: 3px solid #f97316 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-top {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-num {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  color: #ea580c !important;
+  background: #fff7ed !important;
+  padding: 4px 8px !important;
+  border-radius: var(--rbi-radius-sm) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-time {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-text {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--text-main) !important;
+  line-height: 1.45 !important;
+  white-space: pre-wrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-photos {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-photos--pair {
+  grid-template-columns: 1fr 1fr !important;
+  align-items: start !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-photos--single {
+  grid-template-columns: 1fr !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-photos .kb-desk-twi-photo {
+  border-width: 1px !important;
+  border-color: var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-photos .kb-desk-twi-photo--portrait .kb-desk-twi-photo-frame {
+  min-height: 280px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-photos .kb-desk-twi-photo--portrait img {
+  max-height: 420px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-photos--pair .kb-desk-twi-photo--portrait img {
+  max-height: 360px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-photos .kb-desk-twi-photo--landscape img,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-step-photos .kb-desk-twi-photo--square img {
+  max-height: 280px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-pdf-frame {
+  position: relative !important;
+  min-height: 420px !important;
+  height: 100% !important;
+  background: var(--hover-bg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-pdf-iframe {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-pdf-loading,
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-empty {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 280px !important;
+  height: 100% !important;
+  padding: 24px !important;
+  text-align: center !important;
+  color: var(--text-muted) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-links {
+  padding: 12px 16px 16px !important;
+  border-top: 1px solid var(--card-border) !important;
+  background: var(--bg-main) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-links-title {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-muted) !important;
+  text-align: center !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-link {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 40px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--card-bg)) !important;
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+  color: var(--primary-hover) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+}
+
+/* ===== Desktop Узлы (Pattern G, как TWI) ===== */
+body.rbi-knowledge-desktop-wide #ref-sub-nodes.kb-desk-nodes:not(.hidden) {
+  display: block !important;
+  margin-top: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes.hidden {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes.kb-desk-nodes #nodes-main-view {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-chrome {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 48px !important;
+  z-index: 35 !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-top: 0 !important;
+  border-radius: 0 0 10px 10px !important;
+  box-shadow: 0 6px 14px -12px rgba(15, 23, 42, 0.18) !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-nodes .kb-desk-nodes-chrome {
+  top: calc(var(--desk-topbar-h, 52px) + var(--rbi-strip-h, 48px)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-filters {
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-filters > div.flex,
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-filters > .flex.flex-col {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-row1 {
+  justify-content: space-between !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-row2 {
+  justify-content: flex-end !important;
+  padding-top: 8px !important;
+  border-top: 1px solid var(--bg-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-search-wrap {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  position: relative !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-search-wrap > span.absolute {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left: 12px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes #node-search-input {
+  height: 36px !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  padding-left: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  background: var(--bg-main) !important;
+  border-radius: var(--rbi-radius-md) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-actions {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  line-height: 1 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-btn:hover {
+  background: var(--bg-main) !important;
+  border-color: var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-btn-primary:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-tools {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-left: auto !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-owner {
+  margin: 0 !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-owner > span {
+  font-size: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-src-hidden,
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-chrome > [data-knowledge-action="toggleNodeManagePanel"],
+body.rbi-knowledge-desktop-wide #ref-sub-nodes #node-manage-body,
+body.rbi-knowledge-desktop-wide #ref-sub-nodes #nodes-view-mode-toggle {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-filters button[onclick*="downloadMissingCloudFiles"] {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-split {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) !important;
+  gap: 12px !important;
+  min-height: calc(100vh - 260px) !important;
+  margin-top: 10px !important;
+  padding: 0 0 16px !important;
+  align-items: stretch !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-nodes .kb-desk-nodes-split {
+  min-height: calc(100vh - 300px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes #nodes-list-container.kb-desk-nodes-list-source[hidden] {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 10px 8px !important;
+  overflow: auto !important;
+  max-height: calc(100vh - 280px) !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-nodes .kb-desk-nodes-rail {
+  max-height: calc(100vh - 320px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: baseline !important;
+  gap: 8px !important;
+  padding: 4px 6px 10px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  margin-bottom: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-head-title {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-head-sub {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-work {
+  margin-bottom: 4px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-work-toggle {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 8px !important;
+  border: 0 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  font: inherit !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-work-toggle:hover {
+  background: var(--hover-bg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-work-name {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-work-count {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: var(--text-muted) !important;
+  background: var(--card-border) !important;
+  border-radius: 999px !important;
+  padding: 1px 7px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-work-chev {
+  width: 0 !important;
+  height: 0 !important;
+  border-left: 5px solid transparent !important;
+  border-right: 5px solid transparent !important;
+  border-top: 6px solid var(--text-muted) !important;
+  transition: transform 0.2s ease !important;
+  transform: rotate(-90deg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-work.is-open .kb-desk-nodes-rail-work-chev {
+  transform: rotate(0deg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-work-body {
+  display: none !important;
+  padding: 0 0 6px 4px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-work.is-open > .kb-desk-nodes-rail-work-body {
+  display: block !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-row {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 10px !important;
+  margin: 2px 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: var(--card-bg) !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  font: inherit !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-row:hover {
+  border-color: var(--card-border) !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-row.is-active {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--card-bg)) !important;
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 35%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-row-title {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-rail-row-badge,
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-sys-badge {
+  flex-shrink: 0 !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: var(--primary) !important;
+  background: color-mix(in srgb, var(--primary) 22%, var(--card-bg)) !important;
+  border-radius: var(--rbi-radius-sm) !important;
+  padding: 2px 5px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  overflow: auto !important;
+  max-height: calc(100vh - 280px) !important;
+  min-height: 320px !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-nodes .kb-desk-nodes-viewer {
+  max-height: calc(100vh - 320px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-empty {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 240px !important;
+  padding: 24px !important;
+  text-align: center !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  background: var(--bg-main) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-kicker {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--primary) !important;
+  margin-bottom: 4px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-title {
+  margin: 0 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: var(--text-main) !important;
+  line-height: 1.3 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-btn {
+  height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-btn.is-muted {
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-body {
+  padding: 14px 16px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-media {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-photo {
+  display: block !important;
+  width: 100% !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  overflow: hidden !important;
+  background: var(--bg-main) !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  font: inherit !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-photo img {
+  display: block !important;
+  width: 100% !important;
+  max-height: 420px !important;
+  object-fit: contain !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-photo-empty {
+  display: block !important;
+  padding: 40px 16px !important;
+  color: var(--text-muted) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-pdf-frame {
+  border: 1px solid #fecaca !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  overflow: hidden !important;
+  background: var(--card-bg) !important;
+  min-height: 360px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-pdf-iframe {
+  width: 100% !important;
+  height: 480px !important;
+  border: 0 !important;
+  display: block !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-pdf-loading,
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-pdf-fallback {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 200px !important;
+  width: 100% !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #dc2626 !important;
+  background: #fef2f2 !important;
+  border: 0 !important;
+  cursor: pointer !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-block {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 12px 14px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-block h3 {
+  margin: 0 0 8px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-block p {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+  line-height: 1.5 !important;
+  white-space: pre-wrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-mat {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 12px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-mat td {
+  padding: 8px 4px !important;
+  border-bottom: 1px solid var(--hover-bg) !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-mat td:last-child {
+  text-align: right !important;
+  font-weight: 800 !important;
+  color: var(--primary) !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-links {
+  padding: 12px 16px 4px !important;
+  border-top: 1px solid var(--card-border) !important;
+  background: var(--bg-main) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  border-radius: var(--rbi-radius-lg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-links-title {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: var(--text-muted) !important;
+  text-align: center !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-link {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 40px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--card-bg)) !important;
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+  color: var(--primary-hover) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  font: inherit !important;
+}
+
+/* ===== Desktop Практики + Эталоны (Pattern G) ===== */
+body.rbi-knowledge-desktop-wide #ref-sub-practices.kb-desk-prac:not(.hidden) {
+  display: flex !important;
+  flex-direction: column !important;
+  margin-top: 0 !important;
+  gap: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices.hidden {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-filters {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 48px !important;
+  z-index: 35 !important;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border: 1px solid var(--card-border) !important;
+  border-top: 0 !important;
+  border-radius: 0 0 10px 10px !important;
+  background: var(--card-bg) !important;
+  box-shadow: 0 6px 14px -12px rgba(15, 23, 42, 0.18) !important;
+  backdrop-filter: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-practices .kb-desk-prac-filters {
+  top: calc(var(--desk-topbar-h, 52px) + var(--rbi-strip-h, 48px)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-src-hidden {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-row2 {
+  justify-content: space-between !important;
+  padding-top: 8px !important;
+  border-top: 1px solid var(--bg-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-search-wrap {
+  position: relative !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-search-ico {
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: var(--text-muted) !important;
+  pointer-events: none !important;
+  display: flex !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-search {
+  height: 36px !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  padding-left: 36px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  background: var(--bg-main) !important;
+  border-radius: var(--rbi-radius-md) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-actions {
+  display: flex !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-chips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-chips .kb-type-chip {
+  height: 32px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-tools {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+  margin-left: auto !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-owner {
+  margin: 0 !important;
+  gap: 8px !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-owner > span {
+  font-size: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-filters button[onclick*="downloadMissingCloudFiles"] {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices #practices-auto-detector:empty {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices #practices-auto-detector:not(:empty) {
+  margin: 10px 0 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-split {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) !important;
+  gap: 12px !important;
+  min-height: calc(100vh - 280px) !important;
+  margin-top: 10px !important;
+  padding: 0 0 16px !important;
+  align-items: stretch !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-practices .kb-desk-prac-split {
+  min-height: calc(100vh - 320px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices #practices-list-container.kb-desk-prac-list-source[hidden] {
+  display: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 10px 8px !important;
+  overflow: auto !important;
+  max-height: calc(100vh - 300px) !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-practices .kb-desk-prac-rail {
+  max-height: calc(100vh - 340px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: baseline !important;
+  gap: 8px !important;
+  padding: 4px 6px 10px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  margin-bottom: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-head-title {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-head-sub {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-section {
+  margin-bottom: 6px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-toggle {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  padding: 8px !important;
+  border: 0 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-section.is-practice > .kb-desk-prac-rail-toggle {
+  color: var(--primary) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-section.is-etalon > .kb-desk-prac-rail-toggle {
+  color: #2563eb !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-name {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-count {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: var(--text-muted) !important;
+  background: var(--card-border) !important;
+  border-radius: 999px !important;
+  padding: 1px 7px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-body {
+  display: none !important;
+  padding-left: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-section.is-open > .kb-desk-prac-rail-body {
+  display: block !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-work {
+  margin-bottom: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-work-toggle {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 7px 8px !important;
+  border: 0 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  text-align: left !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-work-name {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-work-count {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: var(--text-muted) !important;
+  background: var(--card-border) !important;
+  border-radius: 999px !important;
+  padding: 1px 7px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-work-chev {
+  width: 0 !important;
+  height: 0 !important;
+  border-left: 5px solid transparent !important;
+  border-right: 5px solid transparent !important;
+  border-top: 6px solid var(--text-muted) !important;
+  transform: rotate(-90deg) !important;
+  transition: transform 0.2s ease !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-work.is-open .kb-desk-prac-rail-work-chev {
+  transform: rotate(0deg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-work-body {
+  display: none !important;
+  padding: 0 0 4px 4px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-work.is-open > .kb-desk-prac-rail-work-body {
+  display: block !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-row {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 2px !important;
+  padding: 8px 10px !important;
+  margin: 2px 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: var(--card-bg) !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  font: inherit !important;
+  color: var(--text-main) !important;
+  position: relative !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-row.is-active {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--card-bg)) !important;
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 35%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-row-title {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  padding-right: 36px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-row-sub {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-rail-row-badge {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  color: #a16207 !important;
+  background: #fef08a !important;
+  border-radius: var(--rbi-radius-sm) !important;
+  padding: 2px 5px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  overflow: auto !important;
+  max-height: calc(100vh - 260px) !important;
+  min-height: 420px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.rbi-knowledge-desktop-wide.has-desk-topbar #ref-sub-practices .kb-desk-prac-viewer {
+  max-height: calc(100vh - 300px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-empty {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 200px !important;
+  padding: 24px !important;
+  text-align: center !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-head {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding: 10px 14px 12px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-head-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-kicker {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--primary) !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-title-row {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-title {
+  margin: 0 !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  line-height: 1.3 !important;
+  word-break: break-word !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-norm,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-meta {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+  line-height: 1.45 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-actions {
+  display: flex !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-btn {
+  height: 30px !important;
+  padding: 0 10px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--bg-main) !important;
+  color: var(--text-main) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  white-space: nowrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-btn.is-muted {
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-body {
+  padding: 14px 16px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-block {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 12px 14px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-block h3 {
+  margin: 0 0 8px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-main) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-block p {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+  line-height: 1.5 !important;
+  white-space: pre-wrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos {
+  display: grid !important;
+  gap: 12px !important;
+  margin: 0 0 10px !important;
+  width: 100% !important;
+  align-items: start !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--stage.is-single {
+  grid-template-columns: 1fr !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--stage.is-pair-portrait,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--stage.is-pair-landscape,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--stage.is-mixed {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--etalon.is-single {
+  grid-template-columns: minmax(0, 420px) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--etalon.is-pair-portrait,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--etalon.is-pair-landscape,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--etalon.is-mixed {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photo {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  overflow: hidden !important;
+  background: color-mix(in srgb, var(--text-main) 4%, transparent) !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  font: inherit !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photo-frame {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+}
+
+/* Портрет — крупно по высоте, пропорции сохранены (как TWI) */
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photo--portrait .kb-desk-prac-photo-frame {
+  min-height: 360px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photo--portrait img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 520px !important;
+  object-fit: contain !important;
+  display: block !important;
+  background: transparent !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos.is-pair-portrait .kb-desk-prac-photo--portrait .kb-desk-prac-photo-frame,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--stage.is-pair-portrait .kb-desk-prac-photo--portrait .kb-desk-prac-photo-frame {
+  min-height: 300px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos.is-pair-portrait .kb-desk-prac-photo--portrait img,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos--stage.is-pair-portrait .kb-desk-prac-photo--portrait img {
+  max-height: 420px !important;
+}
+
+/* В колонке Было/Стало портрет чуть компактнее, но всё ещё крупно */
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stage .kb-desk-prac-photo--portrait .kb-desk-prac-photo-frame {
+  min-height: 280px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stage .kb-desk-prac-photo--portrait img {
+  max-height: 400px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stage .kb-desk-prac-photos.is-single .kb-desk-prac-photo--portrait .kb-desk-prac-photo-frame {
+  min-height: 320px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stage .kb-desk-prac-photos.is-single .kb-desk-prac-photo--portrait img {
+  max-height: 460px !important;
+}
+
+/* Альбом / квадрат — ширина на всю колонку */
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photo--landscape .kb-desk-prac-photo-frame,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photo--square .kb-desk-prac-photo-frame {
+  min-height: 180px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photo--landscape img,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photo--square img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 340px !important;
+  object-fit: contain !important;
+  display: block !important;
+  background: transparent !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos.is-single .kb-desk-prac-photo--landscape img,
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photos.is-single .kb-desk-prac-photo--square img {
+  max-height: 400px !important;
+}
+
+/* Practices/Etalon preview — richer layout */
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-btn-primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stages {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stage {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 12px !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stage.is-before {
+  border-top: 3px solid #f59e0b !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stage.is-after {
+  border-top: 3px solid #22c55e !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stage-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-muted) !important;
+  margin-bottom: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stage-text {
+  margin: 0 !important;
+  margin-top: auto !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--text-main) !important;
+  line-height: 1.5 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-block.is-takeaway {
+  background: var(--bg-main) !important;
+  border-color: var(--card-border) !important;
+  border-left: 3px solid var(--primary) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-tools {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  padding-top: 4px !important;
+  border-top: 1px solid var(--card-border) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-list {
+  margin: 0 !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  overflow: hidden !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-row {
+  display: grid !important;
+  grid-template-columns: 120px 1fr !important;
+  gap: 10px !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid var(--hover-bg) !important;
+  align-items: start !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-row:last-child {
+  border-bottom: none !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-row dt {
+  margin: 0 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  color: var(--text-muted) !important;
+  padding-top: 2px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-row dd {
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--text-main) !important;
+  line-height: 1.4 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+/* legacy meta-grid */
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-cell {
+  background: var(--bg-main) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-md) !important;
+  padding: 10px 12px !important;
+  min-width: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-label {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-muted) !important;
+  margin-bottom: 4px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-value {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--text-main) !important;
+  line-height: 1.35 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-section-title {
+  margin: 4px 0 10px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-muted) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-element {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 12px 14px !important;
+  margin-bottom: 10px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-element-title {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: var(--text-main) !important;
+  text-transform: uppercase !important;
+  margin-bottom: 6px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-element-desc {
+  margin: 0 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+  line-height: 1.45 !important;
+  white-space: pre-wrap !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-open-cta {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--card-bg)) !important;
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+  color: var(--primary-hover) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  font: inherit !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-open-cta:hover {
+  background: color-mix(in srgb, var(--primary) 22%, var(--card-bg)) !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-pdf {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 12px 14px !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  border: 1px solid #fecaca !important;
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  text-align: left !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-pdf-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: #fee2e2 !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  flex-shrink: 0 !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-docs {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-doc {
+  display: flex !important;
+  align-items: center !important;
+  padding: 8px 10px !important;
+  border-radius: var(--rbi-radius-md) !important;
+  border: 1px solid var(--card-border) !important;
+  background: var(--bg-main) !important;
+  color: var(--primary) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  font: inherit !important;
+  text-align: left !important;
+}
+
+body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-photo-empty {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100px !important;
+  color: var(--text-muted) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 1100px) {
+  body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-stages,
+  body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-meta-row {
+    grid-template-columns: 100px 1fr !important;
+  }
+}
+
+
+/* === Density tiers (≥1920 / ≥2560) — rails + reading max-width === */
+@media (min-width: 1920px) {
+  body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-split {
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr) !important;
+    gap: calc(12px * var(--desk-gap-bump)) !important;
+  }
+  body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-split,
+  body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-split,
+  body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-split,
+  body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-split {
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr) !important;
+    gap: calc(12px * var(--desk-gap-bump)) !important;
+  }
+
+  /* Pane (viewer) на всю колонку split; кап+центр у тел чтения (не PDF/docs — им нужна ширина) */
+  body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer,
+  body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer,
+  body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer,
+  body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer,
+  body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-viewer {
+    max-width: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-viewer-body,
+  body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-body,
+  body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-body,
+  body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-body {
+    max-width: var(--desk-read-max) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-viewer-title,
+  body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-viewer-title,
+  body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-viewer-title,
+  body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-viewer-title,
+  body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-cl-doc-title {
+    font-size: calc(1.05em * var(--desk-type-bump)) !important;
+  }
+}
+
+@media (min-width: 2560px) {
+  body.rbi-knowledge-desktop-wide #ref-sub-checklists .kb-desk-split {
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr) !important;
+  }
+  body.rbi-knowledge-desktop-wide #ref-sub-docs .kb-desk-docs-split,
+  body.rbi-knowledge-desktop-wide #ref-sub-twi .kb-desk-twi-split,
+  body.rbi-knowledge-desktop-wide #ref-sub-nodes .kb-desk-nodes-split,
+  body.rbi-knowledge-desktop-wide #ref-sub-practices .kb-desk-prac-split {
+    grid-template-columns: minmax(320px, 400px) minmax(0, 1fr) !important;
+  }
+}

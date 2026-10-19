@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RBI Platform</title>
+
+    <link rel="manifest" href="./manifest.webmanifest">
+    <meta name="theme-color" content="#f4f4f4" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#101923" media="(prefers-color-scheme: dark)">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <script src="./libs/tailwindcdn.js"></script>
+
+    <script>
+        // Семантические токены дизайн-системы (_ai/DESIGN_SYSTEM.md §2/§5) — ссылаются на
+        // CSS-переменные бренда (css/brand/rbi.css), не хардкодят hex/px. Старые Tailwind-цвета
+        // (indigo/violet/red/slate…) не удалены — остаются для существующего кода.
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            DEFAULT: 'var(--primary)',
+                            hover: 'var(--primary-hover)',
+                            soft: 'color-mix(in srgb, var(--primary) 18%, var(--card-bg))',
+                        },
+                        danger: {
+                            DEFAULT: 'var(--danger)',
+                            soft: 'color-mix(in srgb, var(--danger) 18%, var(--card-bg))',
+                        },
+                        success: 'var(--success)',
+                        warning: 'var(--warning)',
+                        surface: 'var(--card-bg)',
+                        ink: 'var(--text-main)',
+                        muted: 'var(--text-muted)',
+                    },
+                    // border-surface должен идти по --card-border, не по --card-bg (colors.surface) —
+                    // borderColor переопределяет colors только для border-*-утилит, bg-surface/text-ink
+                    // не задеты. Без этого border-surface рисовал границу цветом фона (невидимую).
+                    borderColor: {
+                        surface: 'var(--card-border)',
+                    },
+                    fontSize: {
+                        'rbi-caption': ['10px', { lineHeight: '1.3' }],
+                        'rbi-label': ['11px', { lineHeight: '1.3' }],
+                        'rbi-body': ['12px', { lineHeight: '1.4' }],
+                        'rbi-title': ['15px', { lineHeight: '1.3' }],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <link rel="stylesheet" href="./css/brand/rbi.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/app-shell.desktop.css">
+    <link rel="stylesheet" href="./css/rbi-ui.css">
+    <link rel="stylesheet" href="./css/analytics.desktop.css">
+    <link rel="stylesheet" href="./css/audit.desktop.css">
+    <link rel="stylesheet" href="./css/engineer.desktop.css">
+    <link rel="stylesheet" href="./css/knowledge.desktop.css">
+    <link rel="stylesheet" href="./css/settings.desktop.css">
+
+    <script src="./libs/chart.umd.min.js"></script>
+
+    <script src="./libs/xlsx.full.min.js"></script>
+
+    <script src="./libs/html2pdf.bundle.min.js"></script>
+
+    <script src="./libs/pptxgenjs.bundle.js"></script>
+    <!-- pptxviewjs подменяет window.FileReader своим static-классом и ломает
+         нативный new FileReader().readAsArrayBuffer (импорт ПК СК / Excel). -->
+    <script>window.__RBI_NativeFileReader = window.FileReader;</script>
+    <script src="./libs/pptxviewjs.min.js"></script>
+    <script>
+        (function () {
+            var nativeFR = window.__RBI_NativeFileReader;
+            if (nativeFR && nativeFR.prototype && typeof nativeFR.prototype.readAsArrayBuffer === 'function'
+                && window.FileReader !== nativeFR) {
+                window.__PptxViewJS_FileReader = window.FileReader;
+                window.FileReader = nativeFR;
+            }
+            try { delete window.__RBI_NativeFileReader; } catch (_) { window.__RBI_NativeFileReader = undefined; }
+        })();
+    </script>
+    <script src="./libs/docx.bundle.js"></script>
+
+    <script src="./libs/pdfjs/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = './libs/pdfjs/pdf.worker.min.js';
+    </script>
+
+    <script src="./libs/qrcode.min.js"></script>
+
+    <script src="./libs/Sortable.min.js"></script>
+
+    <script src="./libs/panzoom.min.js"></script>
+</head>
+
+<body id="app-body">
+    <!-- === APP SIDEBAR (App Shell, icon-rail, только ПК >=768px, §29 п.9 вариант A) === -->
+    <aside id="app-sidebar">
+        <!-- Рендерится ShellService.renderSidebar() -->
+    </aside>
+    <!-- === APP NAV2 (второй сайдбар экранов модуля, только ПК >=1280, shell B) === -->
+    <aside id="app-nav2" hidden aria-label="Экраны модуля">
+        <!-- Синхронно с #main-bottom-nav: AppModeManager.renderBottomNav() -->
+    </aside>
+    <!-- === DESK TOPBAR (slim chrome ПК, shell B) === -->
+    <header id="app-desk-topbar" class="app-desk-topbar" hidden>
+        <div class="app-desk-brand-block">
+            <div id="desk-brand-icon" class="app-desk-brand-icon" aria-hidden="true">
+                <svg id="desk-brand-shield" class="app-desk-brand-shield" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>
+                <img id="desk-brand-logo" src="" alt="" class="app-desk-brand-logo hidden" decoding="async">
+            </div>
+            <div class="app-desk-brand-text">
+                <div class="app-desk-brand">RBI <em>Platform</em></div>
+                <div class="app-desk-dev">Dev. by Igor Kondratiev</div>
+            </div>
+        </div>
+        <div id="desk-sync-status" class="app-desk-sync" title="Синхронизация"></div>
+        <div class="app-desk-spacer"></div>
+        <div id="desk-mode-chip" class="app-desk-chip">Модуль</div>
+        <div id="desk-user-chip" class="app-desk-user">
+            <span class="app-desk-avatar" id="desk-user-avatar">—</span>
+            <span id="desk-user-name">Пользователь</span>
+        </div>
+    </header>
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+
+        <div class="splash-content">
+            <img src="./icons/icon-512-2.png" class="splash-logo">
+            <div class="splash-title">
+                RBI
+                <span class="splash-pro">
+                    PLATFORM
+                </span>
+            </div>
+            <div class="splash-subtitle">
+                Construction OS
+            </div>
+            <div class="splash-loader">
+                <div class="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- === СКРЫТЫЕ ИНПУТЫ ДЛЯ ФАЙЛОВ === -->
+    <input type="file" id="twi-photo-input" accept="image/jpeg, image/png, image/jpg, image/*" style="display:none;"
+        data-knowledge-action="handleTwiPhotoUpload" data-knowledge-action-val-type="event" data-action-event="change">
+    <input type="file" id="twi-photo-good-input" accept="image/jpeg, image/png, image/jpg, image/*"
+        style="display:none;" data-knowledge-action="handleTwiGoodPhotoUpload" data-knowledge-action-val-type="event" data-action-event="change">
+    <input type="file" id="twi-photo-bad-input" accept="image/jpeg, image/png, image/jpg, image/*" style="display:none;"
+        data-knowledge-action="handleTwiBadPhotoUpload" data-knowledge-action-val-type="event" data-action-event="change">
+    <input type="file" id="twi-pdf-input" accept="application/pdf" style="display:none;"
+        data-knowledge-action="handleTwiPdfUpload" data-knowledge-action-val-type="event" data-action-event="change">
+    <input type="file" id="node-import-input" accept=".json" style="display:none;" data-knowledge-action="processNodeImport" data-knowledge-action-val-type="event" data-action-event="change">
+    <input type="file" id="doc-pdf-input" accept="application/pdf" style="display:none;"
+        data-knowledge-action="handleDocPdfUpload" data-knowledge-action-val-type="event" data-action-event="change">
+    <!-- Разделенные инпуты для Камеры и Галереи -->
+    <input type="file" id="photo-input-camera" accept="image/*" capture="environment" style="display:none;"
+        data-audit-action="handlePhotoUpload" data-audit-action-val-type="event" data-action-event="change">
+    <input type="file" id="photo-input-gallery" accept="image/jpeg, image/png, image/jpg, image/*" style="display:none;"
+        data-audit-action="handlePhotoUpload" data-audit-action-val-type="event" data-action-event="change">
+    <input type="file" id="json-input" accept=".json" style="display:none;" data-reference-action="handleFileUpload" data-reference-action-val-type="event" data-action-event="change">
+    <input type="file" id="db-import-input" accept=".json" style="display:none;" data-reports-action="processDataImport" data-reports-action-val-type="event" data-action-event="change">
+    <input type="file" id="excel-template-input" accept=".xlsx, .xls, .csv" style="display:none;"
+        data-reference-action="handleExcelImport" data-reference-action-val-type="event" data-action-event="change">
+    <input type="file" id="twi-import-input" accept=".json" style="display:none;" data-knowledge-action="processTwiImport" data-knowledge-action-val-type="event" data-action-event="change">
+    <!-- RBI NEW: Инпут для импорта Графика производства работ -->
+    <!-- RBI NEW: Инпут для импорта выгрузки из ПК Стройконтроль -->
+    <input type="file" id="sk-excel-input" accept=".xlsx, .xls" style="display:none;"
+        data-sk-action="sk_handleExcelImport" data-sk-action-val-type="event" data-action-event="change">
+    <input type="file" id="schedule-excel-input" accept=".xlsx, .xls" style="display:none;"
+        data-schedule-action="rbi_handleScheduleImport" data-schedule-action-val-type="event" data-action-event="change">
+    <canvas id="photo-canvas" style="display:none;"></canvas>
+
+    <!-- === ТОСТЫ И УВЕДОМЛЕНИЯ === -->
+    <div id="toast-container"></div>
+    <!-- RBI NEW: УНИВЕРСАЛЬНОЕ МЕНЮ ДЕЙСТВИЙ (3 ТОЧКИ) -->
+    <div id="universal-action-sheet"
+        class="fixed inset-0 bg-slate-900/60 z-[9500] hidden items-end justify-center p-2 sm:p-4 backdrop-blur-sm transition-opacity duration-300 opacity-0"
+        data-interventions-action="closeUniversalActionSheet">
+        <div class="bg-[var(--card-bg)] w-full max-w-md rounded-3xl shadow-2xl transition-transform duration-300 transform translate-y-full mb-[20px] sm:mb-0 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden flex flex-col"
+            onclick="event.stopPropagation()">
+            <div
+                class="p-4 border-b border-slate-100 dark:border-slate-800 bg-[var(--hover-bg)] shrink-0 flex justify-between items-center">
+                <h3 class="font-black text-[13px] uppercase tracking-tight text-slate-800 dark:text-white"
+                    id="uas-title">Действия</h3>
+                <button data-interventions-action="closeUniversalActionSheet" class="text-slate-400 active:scale-90 p-1"><svg
+                        class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg></button>
+            </div>
+            <div class="p-2 space-y-1" id="uas-buttons">
+                <!-- Сюда вставятся кнопки из JS -->
+            </div>
+        </div>
+    </div>
+    <!-- === ЛОУДЕР (ГЛОБАЛЬНЫЙ) === -->
+    <div id="global-loader"
+        class="fixed inset-0 bg-slate-900/80 z-[9999] hidden flex-col items-center justify-center backdrop-blur-md transition-opacity duration-300 opacity-0">
+        <svg class="animate-spin h-10 w-10 text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+        </svg>
+        <div id="global-loader-text" class="text-white font-black text-[12px] uppercase tracking-widest animate-pulse">
+            Формирование PDF...</div>
+    </div>
+    <!-- === AUTH GATE (первый запуск) === -->
+    <div id="auth-gate-overlay"
+        class="fixed inset-0 bg-slate-900/90 z-[10000] hidden flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-[var(--card-bg)] w-full max-w-sm p-6 rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50">
+            <div class="font-black text-[15px] uppercase tracking-tight mb-2 text-slate-800 dark:text-white text-center">
+                RBI Platform</div>
+            <div class="text-[12px] text-[var(--text-muted)] text-center mb-5">
+                Выберите режим работы</div>
+            <div id="auth-gate-choice" class="space-y-3">
+                <button data-shell-action="hideAuthGate"
+                    class="w-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 py-3.5 rounded-xl font-bold text-[12px] uppercase shadow-sm active:scale-95 border border-slate-200 dark:border-slate-700">
+                    Работать локально
+                </button>
+                <button onclick="document.getElementById('auth-gate-choice').classList.add('hidden'); document.getElementById('auth-gate-connect').classList.remove('hidden');"
+                    class="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase shadow-md active:scale-95">
+                    Войти в облако
+                </button>
+            </div>
+            <div id="auth-gate-connect" class="hidden space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-[var(--text-muted)] uppercase mb-1 block">Имя (Фамилия И.О.) *</label>
+                    <input type="text" id="gate-sync-name" class="input-base" placeholder="Иванов И.И.">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-[var(--text-muted)] uppercase mb-1 block">Код компании *</label>
+                    <input type="text" id="gate-sync-code" class="input-base" placeholder="Например: RBI-COMPANY">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-[var(--text-muted)] uppercase mb-1 block">ПИН-код (Опционально)</label>
+                    <input type="password" id="gate-sync-pin" autocomplete="new-password" class="input-base" placeholder="4 цифры" maxlength="4" inputmode="numeric">
+                </div>
+                <button data-shell-action="submitAuthGateConnect"
+                    class="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase shadow-md active:scale-95">
+                    Подключиться
+                </button>
+                <button onclick="document.getElementById('auth-gate-connect').classList.add('hidden'); document.getElementById('auth-gate-choice').classList.remove('hidden');"
+                    class="w-full text-slate-400 py-2 font-bold text-[10px] uppercase active:scale-95">
+                    Назад
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- === PLATFORM ENTRY: выбор рабочих модулей (App Shell Блок 2, §29 п.9, multi-select) === -->
+    <div id="platform-entry-modal"
+        class="fixed inset-0 bg-slate-900/70 z-[10100] hidden items-center justify-center p-4 backdrop-blur-sm"
+        data-shell-action="hidePlatformEntry">
+        <div class="bg-[var(--card-bg)] w-full max-w-sm p-6 rounded-2xl shadow-2xl flex flex-col gap-3 max-h-[85vh] overflow-y-auto"
+            onclick="event.stopPropagation()">
+            <div class="font-black text-center text-[14px] uppercase tracking-tight mb-1 text-slate-800 dark:text-white">
+                Выбрать рабочие модули</div>
+            <div class="text-[10px] text-[var(--text-muted)] text-center mb-2">Можно выбрать один или несколько</div>
+            <div id="platform-entry-modules" class="grid grid-cols-2 gap-2">
+                <!-- Карточки рендерятся ShellService.renderModuleSelection() -->
+            </div>
+            <button data-shell-action="applyModuleSelection"
+                class="w-full mt-2 bg-indigo-600 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase shadow-md flex items-center justify-center gap-2 active:scale-95">
+                Применить
+            </button>
+            <button data-shell-action="hidePlatformEntry"
+                class="w-full mt-1 text-slate-400 py-2 font-bold text-[10px] uppercase active:scale-95">Закрыть</button>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+    <!-- === ШАПКА === -->
+    <header class="header-fixed" id="main-header">
+        <div class="max-w-4xl mx-auto px-2 py-2" id="header-inner">
+            <!-- СТРОКА 1: Логотип -->
+            <div class="header-top-row flex items-center justify-between mb-1.5 header-collapsible">
+
+                <!-- ЛЕВАЯ ЧАСТЬ: Гамбургер (мобильный переключатель модулей) + Легкая iOS-иконка + Текст -->
+                <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                    <!-- Мобильный переключатель модулей (App Shell, 3 полоски, видим только <768px) —
+                         desktop-аналог: #app-sidebar (icon-rail). Открывает #mobile-module-menu. -->
+                    <div class="relative mobile-module-menu-wrap">
+                        <button type="button" id="mobile-module-menu-btn" data-shell-action="toggleMobileModuleMenu"
+                            class="mobile-hamburger-btn w-9 h-9 bg-[var(--card-bg)] rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-[var(--card-border)] flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                            title="Модули" aria-label="Переключить модуль">
+                            <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+                            </svg>
+                        </button>
+                        <div id="mobile-module-menu"
+                            class="hidden absolute left-0 top-full mt-2 w-56 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-2xl z-[5000] overflow-hidden py-1.5">
+                            <!-- Рендерится ShellService.renderMobileModuleMenu() -->
+                        </div>
+                    </div>
+                    <!-- Иконка приложения (щит) / фирменный логотип (прямоугольный слот по пропорциям) -->
+                    <div id="header-brand-icon"
+                        class="w-9 h-9 bg-[var(--card-bg)] rounded-[10px] shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-[var(--card-border)] flex items-center justify-center shrink-0 overflow-hidden">
+                        <svg id="header-brand-shield" class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <path d="M9 12l2 2 4-4"></path>
+                        </svg>
+                        <img id="header-brand-logo" src="" alt="" class="hidden h-7 w-auto max-w-[6.75rem] object-contain" decoding="async">
+                    </div>
+                    <!-- Блок с текстом -->
+                    <div class="flex flex-col justify-center min-w-0 gap-0.5">
+                        <!-- Название и облачко в одной строке -->
+                        <div class="flex items-center gap-1.5">
+                            <div
+                                class="text-slate-800 dark:text-white font-black text-[13px] uppercase tracking-tight truncate leading-none">
+                                RBI <span class="text-indigo-600 dark:text-indigo-400 font-bold">Platform</span>
+                            </div>
+                            <!-- Индикатор синхронизации -->
+                            <div id="header-sync-status" class="shrink-0 flex items-center"></div>
+                            <!-- Блок текущего пользователя (App Shell/User Context) — убран из шапки как
+                                 визуальный шум, элемент оставлен в DOM (hidden) на случай отката,
+                                 ShellService.renderUserBlock() продолжает писать в него безопасно (no-op UI). -->
+                            <div id="header-user-block" class="hidden shrink-0 flex items-center text-[10px] font-semibold text-slate-500 dark:text-slate-400 truncate"></div>
+                        </div>
+                        <!-- Company block (App Shell Блок 2, §29 п.9) — убран из шапки как визуальный шум,
+                             элемент оставлен в DOM (hidden) на случай отката. -->
+                        <div id="header-company-block"
+                            class="hidden text-[8px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest truncate leading-none">
+                        </div>
+                        <!-- Подпись разработчика -->
+                        <div
+                            class="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate leading-none">
+                            Dev. by Igor Kondratiev
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ПРАВАЯ ЧАСТЬ: Переключатель Режима + Селектор Чек-листа -->
+                <div class="flex items-center gap-1.5 shrink-0">
+
+                    <!-- Кнопка "Выбрать модуль" (Platform Entry, §37.1) -->
+                    <button type="button" data-shell-action="showPlatformEntry"
+                        class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[10px] border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-transform shrink-0"
+                        title="Выбрать модуль">
+                        <svg class="w-4 h-4 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Переключатель режима приложения (НОВОЕ) -->
+                    <div id="app-mode-selector-container"
+                        class="relative flex items-center bg-slate-100 dark:bg-slate-800 px-2 h-8 rounded-[10px] border border-slate-200 dark:border-slate-700 cursor-pointer shadow-sm active:scale-95 transition-transform z-50">
+                        <span id="current-mode-label"
+                            class="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase flex items-center gap-1">
+                            Quality ▾
+                        </span>
+                        <select id="app-mode-selector" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            data-settings-action="changeAppMode" data-settings-action-val-type="value" data-action-event="change">
+                            <option value="quality" selected>Качество</option>
+                            <option value="construction">Стройконтроль</option>
+                            <option value="construction-v2">Стройконтроль в2 (тест)</option>
+                            <option value="safety">Безопасность</option>
+                            <option value="warranty">Гарантия</option>
+                            <option value="uk">УК (Упр. компания)</option>
+                        </select>
+                    </div>
+
+                    <!-- Старый селектор чек-листа (остается без изменений, просто обернули) -->
+                    <div id="header-checklist-container"
+                        class="relative flex items-center bg-indigo-50/80 dark:bg-indigo-900/30 px-3 h-8 rounded-[10px] border border-indigo-100 dark:border-indigo-800/50 cursor-pointer shadow-sm active:scale-95 transition-transform">
+                        <span
+                            class="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 uppercase flex items-center gap-1.5">
+
+                            Чек-лист ▾
+                        </span>
+                        <select id="checklist-selector" class="absolute inset-0 z-10 w-full h-full cursor-pointer opacity-[0.01]"
+                            data-audit-action="changeTemplate" data-audit-action-val-type="value" data-action-event="change"
+                            aria-label="Выбрать чек-лист">
+                            <option value="" disabled selected>Выбрать...</option>
+                            <option value="HOME">🏠 Главный экран</option>
+                            <optgroup label="Системные" id="system-group"></optgroup>
+                            <optgroup label="Загруженные" id="user-group"></optgroup>
+                        </select>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- СТРОКА 2: Двухуровневый Мини-дашборд -->
+            <!-- ИСПРАВЛЕНО: Уменьшен нижний отступ (mb-1.5) для плотности -->
+            <div id="header-dashboard"
+                class="bg-[var(--card-border)]/80 backdrop-blur-md border border-[var(--card-border)] rounded-xl p-1.5 mb-1.5 shadow-sm transition-all duration-300">
+                <div class="flex gap-2 items-center">
+                    <div class="flex-1 cursor-pointer p-1 rounded-lg hover:bg-[var(--hover-bg)] transition-colors"
+                        data-audit-action="showContractorDetails">
+                        <div class="flex justify-between items-center mb-1"><span
+                                class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Подрядчик</span><span
+                                class="flex items-center gap-1"><span id="dash-c-doc"
+                                    class="text-[10px] font-bold text-indigo-400" title="Документарный УрК (бумаги)"></span><span
+                                id="dash-c-text" class="text-[9px] font-bold text-slate-400">0 изд.</span></span></div>
+                        <div class="relative w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-md overflow-hidden">
+                            <div id="dash-c-bar" class="absolute top-0 left-0 h-full bg-slate-300" style="width: 0%">
+                            </div>
+                            <div id="dash-c-percent"
+                                class="absolute inset-0 flex items-center justify-center text-[9px] font-black text-slate-800 dark:text-white z-10">
+                                --%</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center justify-center cursor-pointer px-1 active:scale-90"
+                        data-audit-action="toggleDashboardExpand">
+                        <div class="w-px h-2 bg-[var(--card-border)] mb-0.5"></div>
+                        <div id="dash-expand-icon"
+                            class="text-[9px] text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-full w-4 h-4 flex items-center justify-center">
+                            ▼</div>
+                        <div class="w-px h-2 bg-[var(--card-border)] mt-0.5"></div>
+                    </div>
+                    <div class="flex-1 cursor-pointer p-1 rounded-lg hover:bg-[var(--hover-bg)] transition-colors"
+                        data-audit-action="showProductMath">
+                        <div class="flex justify-between items-center mb-1"><span
+                                class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Изделие</span><span
+                                class="flex items-center gap-1"><span id="dash-p-doc"
+                                    class="text-[10px] font-bold text-indigo-400" title="Документарный УрК (бумаги)"></span><span
+                                id="dash-p-text" class="text-[9px] font-bold text-slate-400">0/0</span></span></div>
+                        <div class="relative w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-md overflow-hidden">
+                            <div id="dash-p-bar" class="absolute top-0 left-0 h-full bg-slate-300" style="width: 0%">
+                            </div>
+                            <div id="dash-p-percent"
+                                class="absolute inset-0 flex items-center justify-center text-[9px] font-black text-slate-800 dark:text-white z-10">
+                                --%</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="dash-expanded-view" class="hidden border-t border-[var(--card-border)] mt-1.5 pt-1.5">
+                    <div class="grid grid-cols-2 gap-3 px-1 pb-1">
+                        <div class="text-[9px]">
+                            <div class="flex justify-between"><span
+                                    class="text-[var(--text-muted)]">Системность:</span><span id="dash-c-ks"
+                                    class="font-bold">-</span></div>
+                            <div class="flex justify-between"><span
+                                    class="text-[var(--text-muted)]">Критичность:</span><span id="dash-c-kcrit"
+                                    class="font-bold">-</span></div>
+                            <div class="flex justify-between text-red-500 mt-1"><span class="font-bold">Изделий с
+                                    B3:</span><span id="dash-c-b3" class="font-black">0</span></div>
+                        </div>
+                        <div class="text-[9px] border-l border-slate-100 dark:border-slate-700 pl-3">
+                            <div class="flex justify-between"><span
+                                    class="text-[var(--text-muted)]">Концентрация:</span><span id="dash-p-kc"
+                                    class="font-bold">-</span></div>
+                            <div class="flex justify-between"><span
+                                    class="text-[var(--text-muted)]">Критичность:</span><span id="dash-p-kcrit"
+                                    class="font-bold">-</span></div>
+                            <div class="flex justify-between mt-1"><span
+                                    class="font-bold text-[var(--text-muted)]">Дефекты:</span><span
+                                    class="font-black"><span id="dash-p-b2" class="text-orange-500">0</span> / <span
+                                        id="dash-p-b3" class="text-red-500">0</span></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- СТРОКА 3: Данные объекта -->
+            <div id="header-data-block" class="mb-1.5">
+                <div
+                    class="flex justify-between items-center bg-[var(--card-border)]/80 backdrop-blur-md border border-[var(--card-border)] rounded-xl px-3 py-1.5 shadow-sm mb-1.5">
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <svg class="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                            </path>
+                        </svg>
+                        <div id="current-checklist-label"
+                            class="text-[10px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider truncate flex-1">
+                            Вид работ не выбран</div>
+                    </div>
+                </div>
+                <div id="data-block-content"
+                    class="grid grid-cols-2 gap-1.5 header-collapsible bg-[var(--card-border)]/80 backdrop-blur-md p-2 rounded-xl border border-[var(--card-border)] shadow-sm">
+                    <!-- Скрытое поле Инспектора (оставляем для логики JS, но прячем от глаз) -->
+                    <input type="hidden" id="inp-inspector" value="">
+
+                    <!-- Подрядчик / Объект / кнопка «на плане» -->
+                    <div class="col-span-2 flex items-center gap-1.5">
+                        <div class="relative flex-1 min-w-0"><input type="text" id="inp-contractor" class="input-base text-center"
+                                placeholder="Подрядчик *" autocomplete="off"></div>
+                        <div class="relative flex-1 min-w-0">
+                            <input type="text" id="inp-project" class="input-base text-center transition-colors"
+                                placeholder="Объект *" autocomplete="off">
+
+                            <span id="lock-inp-project"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-white hidden pointer-events-none">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z">
+                                    </path>
+                                </svg>
+                            </span>
+                        </div>
+                        <button type="button" id="btn-quality-plan-pin"
+                            class="shrink-0 px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-700
+                                   text-[10px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-200 hover:bg-indigo-100 transition-colors">
+                            📍 на плане
+                        </button>
+                    </div>
+
+                    <div class="col-span-2 grid grid-cols-3 gap-1.5 mt-1">
+                        <div class="relative"><input type="text" id="inp-section" class="input-base text-center"
+                                placeholder="Корпус*" autocomplete="off"></div>
+                        <div class="relative"><input type="text" id="inp-floor" class="input-base text-center"
+                                placeholder="Этаж*" autocomplete="off"></div>
+                        <div class="relative"><input type="text" id="inp-room" class="input-base text-center"
+                                placeholder="Оси/Пом.*" autocomplete="off"></div>
+                    </div>
+                    <div class="col-span-2 flex items-center gap-2 mt-1.5">
+                        <div id="quality-plan-pin-indicator"
+                            class="hidden flex-1 items-center gap-2 min-w-0 px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800">
+                            <span class="text-[10px] font-bold text-emerald-800 dark:text-emerald-200 truncate">● Точка на плане</span>
+                            <button type="button" data-qpin-reposition
+                                class="ml-auto shrink-0 text-[9px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-300">переставить</button>
+                            <button type="button" data-qpin-clear
+                                class="shrink-0 text-[9px] font-black uppercase tracking-wider text-slate-500 hover:text-red-600">снять</button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="inp-location">
+                </div>
+
+                <!-- СТРОКА 4: Навигация -->
+                <div id="audit-group-nav" class="overflow-x-auto whitespace-nowrap mt-1.5 no-scrollbar flex gap-2">
+                </div>
+            </div>
+    </header>
+
+    <!-- === ОСНОВНОЙ КОНТЕЙНЕР === -->
+    <main id="app-root" class="max-w-4xl mx-auto px-2 pt-4 pb-20">
+        <!-- === БАННЕР ПРЕДУПРЕЖДЕНИЯ ДЛЯ РЕЖИМА СТРОЙКОНТРОЛЬ === -->
+        <div id="construction-warning-banner"
+            class="hidden mb-4 bg-yellow-50 border border-yellow-200 p-3 rounded-2xl shadow-sm items-start gap-3 mt-2">
+            <div class="text-2xl mt-1">🚧</div>
+            <div>
+                <div class="text-[11px] font-black text-yellow-800 uppercase tracking-widest mb-0.5"
+                    data-i18n="construction.banner.title">Режим бета-тестирования</div>
+                <div class="text-[10px] text-yellow-700 font-medium leading-snug"
+                    data-i18n="construction.banner.body">Модуль "Стройконтроль" находится на стадии проектирования архитектуры. Облачная синхронизация для этого раздела временно отключена. Данные сохраняются только на вашем устройстве.</div>
+            </div>
+        </div>
+
+        <div id="app-content">
+        <!-- ВКЛАДКА 1: ОСМОТР — перенесена в JS-рендер (audit.render.js:renderMarkup(),
+             монтируется на верхнем уровне модуля до DOMContentLoaded) -->
+
+        <!-- ВКЛАДКА 2: ИНЖЕНЕР — перенесена в JS-рендер (engineer.render.js:renderMarkup(),
+             монтируется на верхнем уровне модуля до DOMContentLoaded) -->
+
+        <!-- ВКЛАДКА 3: АНАЛИТИКА И ОТЧЕТЫ — перенесена в JS-рендер (analytics.render.js:renderMarkup(),
+             монтируется на верхнем уровне модуля до DOMContentLoaded) -->
+
+        <!-- ВКЛАДКА 4: СПРАВОЧНИК — перенесена в JS-рендер (reference.js:renderReferenceMarkup(),
+             монтируется на верхнем уровне модуля до DOMContentLoaded) -->
+
+        <!-- ВКЛАДКА 5: НАСТРОЙКИ — перенесена в JS-рендер (settings.render.js:renderMarkup(),
+             монтируется на верхнем уровне модуля до DOMContentLoaded) -->
+        <!-- ВКЛАДКА 6: СТРОЙКОНТРОЛЬ - ДЕФЕКТЫ НА ПЛАНЕ — перенесена в JS-рендер
+             (construction.render.js:renderMarkup(), монтируется на верхнем
+             уровне модуля до DOMContentLoaded) -->
+
+        <!-- ВКЛАДКА 7: СТРОЙКОНТРОЛЬ - ПЕРЕДАЧА КВАРТИР / ШАХМАТКА — перенесена
+             в JS-рендер (construction.render.js:renderMarkup(), монтируется
+             на верхнем уровне модуля до DOMContentLoaded) -->
+
+        <!-- ВКЛАДКА 8: СТРОЙКОНТРОЛЬ - ПРИЁМКА РАБОТ — перенесена в JS-рендер
+             (construction.render.js:renderMarkup(), монтируется на верхнем
+             уровне модуля до DOMContentLoaded) -->
+        <!-- === РЕЖИМ: ЗАГЛУШКА (ДЛЯ НОВЫХ МОДУЛЕЙ) === -->
+        <div id="tab-mode-placeholder" class="view-section hidden">
+            <div class="flex flex-col items-center justify-center py-20 px-4 text-center">
+                <div
+                    class="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 rounded-3xl flex items-center justify-center text-4xl mb-4 border border-indigo-100 dark:border-indigo-800 shadow-sm">
+                    🚧
+                </div>
+                <h2 class="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight mb-2">Модуль в
+                    разработке</h2>
+                <p id="placeholder-message"
+                    class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto mb-6">
+                    Функционал находится на стадии проектирования и станет доступен в ближайших обновлениях.
+                </p>
+                    <div class="flex flex-col gap-2 w-full max-w-xs">
+                    <button data-settings-action="rbi_backFromModePlaceholder"
+                    class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Вернуться назад
+                </button>
+                <button data-settings-action="rbi_sendIdeaFromPlaceholder"
+                    class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-6 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-sm active:scale-95 transition-transform flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                    Отправить идею разработчику
+                </button>
+                </div>
+
+                <!-- Мини-игра «Змейка» (пока ждём модуль) — js/shared/snake-game.utils.js -->
+                <div class="w-full max-w-xs mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+                    <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Пока ждём — сыграем?</div>
+                    <div class="relative bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-3 flex flex-col items-center gap-2">
+                        <div class="flex items-center justify-between w-full text-[10px] font-bold text-slate-500 dark:text-slate-400 px-1">
+                            <span>Счёт: <span id="snake-score" class="text-slate-800 dark:text-white font-black">0</span></span>
+                            <span>Рекорд: <span id="snake-best" class="text-indigo-500 font-black">0</span></span>
+                        </div>
+                        <canvas id="snake-canvas" width="240" height="240" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 touch-none"></canvas>
+                        <div id="snake-overlay" class="absolute inset-0 top-9 flex items-center justify-center">
+                            <button data-settings-action="rbi_startSnakeGame"
+                                class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md active:scale-95">
+                                ▶ Играть
+                            </button>
+                        </div>
+                        <!-- Свайпы обрабатываются прямо на canvas (touch); D-pad — резервное управление для десктопа без стрелок -->
+                        <div class="grid grid-cols-3 gap-1 w-24 mt-1">
+                            <div></div>
+                            <button data-settings-action="rbi_snakeDirection" data-action-arg="up" class="bg-slate-100 dark:bg-slate-700 rounded-lg py-1.5 text-slate-500 dark:text-slate-300 active:scale-90">▲</button>
+                            <div></div>
+                            <button data-settings-action="rbi_snakeDirection" data-action-arg="left" class="bg-slate-100 dark:bg-slate-700 rounded-lg py-1.5 text-slate-500 dark:text-slate-300 active:scale-90">◀</button>
+                            <button data-settings-action="rbi_snakeDirection" data-action-arg="down" class="bg-slate-100 dark:bg-slate-700 rounded-lg py-1.5 text-slate-500 dark:text-slate-300 active:scale-90">▼</button>
+                            <button data-settings-action="rbi_snakeDirection" data-action-arg="right" class="bg-slate-100 dark:bg-slate-700 rounded-lg py-1.5 text-slate-500 dark:text-slate-300 active:scale-90">▶</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="app-modals">
+    <!-- === ФОТОРЕДАКТОР (РИСОВАНИЕ СТРЕЛОК) === -->
+    <!-- photo-editor-overlay: перенесено в js/shared/photo-editor.utils.js (JS-рендер, mount в #app-modals) -->
+    <!-- === КОНСТРУКТОР ШАБЛОНОВ === -->
+    <!-- template-builder-overlay: перенесено в js/modules/knowledge/features/reference.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА ПРОСМОТРА ФОТО === -->
+    <!-- photo-viewer-overlay: перенесено в js/shared/photo-viewer-zoom.utils.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА ПРОСМОТРА ТЕХ. УЗЛА === -->
+    <!-- node-viewer-overlay: перенесено в js/modules/knowledge/knowledge.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА ПРОСМОТРА ИНСТРУКЦИЙ (УНИВЕРСАЛЬНАЯ ЧИТАЛКА) === -->
+    <!-- twi-viewer-overlay: перенесено в js/modules/knowledge/knowledge.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- === УВЕДОМЛЕНИЕ ОБ ОБНОВЛЕНИИ PWA === -->
+    <!-- pwa-update-banner: перенесено в js/shared/pwa-update.utils.js (JS-рендер, mount в #app-modals) -->
+    <!-- === ДИНАМИЧЕСКОЕ МЕНЮ ЭКСПОРТА (БЕЗ ЭМОДЗИ, 2 РЕЖИМА) === -->
+    <!-- fab-export-menu-overlay: перенесено в js/shared/fab-export.utils.js (JS-рендер, mount в #app-modals) -->
+    <!-- === КОНТЕКСТНОЕ МЕНЮ TWI КАРТОЧЕКИ === -->
+    <!-- twi-action-sheet: перенесено в js/modules/knowledge/knowledge.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА ВЫБОРА ИСТОЧНИКА ФОТО === -->
+    <!-- photo-source-modal: перенесено в js/shared/photo-editor.utils.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА ДОБАВЛЕНИЯ НОРМАТИВА (НД) === -->
+    <!-- add-doc-modal-overlay: перенесено в js/modules/knowledge/knowledge.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- === УНИВЕРСАЛЬНЫЙ ПРОСМОТРЩИК PDF С PANZOOM === -->
+    <!-- universal-pdf-modal: перенесено в js/modules/construction/features/pdf-viewer.js (JS-рендер, mount в #app-modals) -->
+    <!-- === ГЛОБАЛЬНАЯ МОДАЛКА (История, УрК, Расчеты) === -->
+    <!-- modal-overlay: перенесено в js/shared/notify.utils.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА РЕДАКТОРА ЗАКЛЮЧЕНИЯ ИИ === -->
+    <!-- expert-modal-overlay: перенесено в js/modules/quality/features/analytics/analytics.actions.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА ПРИЧИНЫ И КОММЕНТАРИЯ === -->
+    <!-- comment-modal-overlay: перенесено в js/modules/quality/features/audit/audit.actions.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА СПИСКА ИНСТРУКЦИЙ ДЛЯ ПУНКТА === -->
+    <!-- item-help-modal-overlay: перенесено в js/modules/knowledge/knowledge.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА ИСТОРИИ ИЗМЕНЕНИЙ (CHANGELOG) === -->
+    <!-- changelog-modal-overlay: перенесено в js/modules/settings/features/changelog.js (JS-рендер, mount в #app-modals) -->
+    <!-- === ПОЛНОЦЕННЫЙ КАЛЕНДАРЬ ЗАДАЧ === -->
+    <!-- task-calendar-modal: перенесено в js/modules/quality/features/tasks/tasks.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА МУЛЬТИ-ФИЛЬТРА === -->
+    <!-- multi-filter-modal-overlay: перенесено в js/modules/quality/features/shared/multi-filter.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА УПРАВЛЕНИЯ СТАТУСОМ ЗАДАЧИ === -->
+    <!-- task-status-modal: перенесено в js/modules/quality/features/gamification/game.actions.js (JS-рендер, mount в #app-modals) -->
+    <!-- etalon-prompt-modal: удалён (2026-07-15) — осиротевший UI без точки вызова (btn-start-etalon не имел onclick/data-action), бизнес-поток "требуется эталон" полностью закрыт существующей задачей "Приемка Эталона" → кнопка "Снять Эталон" → openEtalonConstructor(), см. tasks.module.js/etalon.actions.js -->
+    <!-- === МОДАЛКА ВЫБОРА ТЕХ. УЗЛА === -->
+    <!-- node-selector-modal: перенесено в js/modules/knowledge/knowledge.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- === ФОРМА ДОБАВЛЕНИЯ/ПРОСМОТРА ДЕФЕКТА НА ПЛАНЕ === -->
+    <!-- === ФОРМА ДОБАВЛЕНИЯ/ПРОСМОТРА ДЕФЕКТА НА ПЛАНЕ === -->
+    <!-- const-defect-modal: перенесено в js/modules/construction/features/defect-form.js (JS-рендер, mount в #app-modals) -->
+    <!-- === СУПЕР-МОДАЛКА ДЕТАЛИЗАЦИИ ЗАДАЧИ (V2.0) === -->
+    <!-- === СУПЕР-МОДАЛКА ДЕТАЛИЗАЦИИ ЗАДАЧИ (V2.0) === -->
+    <!-- task-details-modal: перенесено в js/modules/quality/features/tasks/tasks.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА AI-ЧАТА ПО НОРМАТИВАМ === -->
+    <!-- ai-chat-modal: перенесено в js/modules/quality/features/ai/ai.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- RBI NEW: МОДАЛКА ВОЗДЕЙСТВИЙ НА ПОДРЯДЧИКА -->
+    <!-- rbi-intervention-modal: перенесено в js/modules/quality/features/interventions.js (JS-рендер, mount в #app-modals) -->
+    <!-- RBI NEW: МОДАЛКА ЛУЧШЕЙ ПРАКТИКИ -->
+    <!-- rbi-practice-modal: перенесено в js/modules/quality/features/interventions.js (JS-рендер, mount в #app-modals) -->
+    <!-- RBI NEW: МОДАЛКА РУЧНОЙ ПРАКТИКИ (БЕЗ ЭМОДЗИ) -->
+    <!-- manual-practice-modal: перенесено в js/modules/quality/features/interventions.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА РУЧНОЙ ЗАДАЧИ === -->
+    <!-- manual-task-modal: перенесено в js/modules/quality/features/tasks/tasks.module.js (JS-рендер, mount в #app-modals) -->
+    <!-- === НОВОЕ МОДАЛЬНОЕ ОКНО FAQ === -->
+    <!-- faq-modal-overlay: перенесено в js/modules/knowledge/features/faq.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА ПРОСМОТРА ЭТАЛОНА === -->
+    <!-- etalon-view-modal: перенесено в js/modules/quality/features/etalon/etalon.actions.js (JS-рендер, mount в #app-modals) -->
+    <!-- === МОДАЛКА AI-ПОМОЩНИКА ПО ПРИЛОЖЕНИЮ === -->
+    <!-- app-assistant-modal: перенесено в js/modules/knowledge/features/faq.js (JS-рендер, mount в #app-modals) -->
+    </div>
+    <!-- === НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (iOS-like) === -->
+    <!-- === НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (iOS-like) === -->
+    <!-- === НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (iOS-like) === -->
+    <nav id="main-bottom-nav" class="bottom-nav nav-auto ios-panel border-t-0 transition-opacity duration-300">
+        <div class="nav-item" data-path="#/quality/audit">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                </path>
+            </svg>
+            <span class="nav-text" data-i18n="nav.bottom.audit">Осмотр</span>
+        </div>
+        <div class="nav-item" data-path="#/quality/engineer">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z">
+                </path>
+            </svg>
+            <span class="nav-text" data-i18n="nav.bottom.engineer">Инженер</span>
+        </div>
+        <div class="nav-item" data-path="#/quality/analytics">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                </path>
+            </svg>
+            <span class="nav-text" data-i18n="nav.bottom.analytics">Аналитика</span>
+        </div>
+        <div class="nav-item" data-path="#/quality/reference">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                </path>
+            </svg>
+            <span class="nav-text" data-i18n="nav.bottom.knowledge">БЗ</span>
+        </div>
+        <div class="nav-item" data-path="#/quality/settings">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                </path>
+                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span class="nav-text" data-i18n="nav.bottom.settings">Настройки</span>
+        </div>
+    </nav>
+
+
+
+    <!-- === ПОДКЛЮЧЕНИЕ МОДУЛЕЙ JS === -->
+    <script>
+        window.RBI_APP_VERSION = {
+            app: '18.59.0',
+            sw: '18.59.58',
+            buildDate: '2026-08-12'
+        };
+    </script>
+    <!-- === ПОДКЛЮЧЕНИЕ МОДУЛЕЙ JS === -->
+    <!-- 1. Сначала облако и конфигурация -->
+    <script src="./libs/supabase-js.min.js"></script>
+    <script type="module" src="js/core/rbi-core.js"></script>
+    <script type="module" src="js/services/config.service.js"></script>
+    <script type="module" src="js/services/sync/sync-core.state.js"></script>
+    <script type="module" src="js/services/sync/sync-cloud-prepare.utils.js"></script>
+    <script type="module" src="js/services/sync/sync-auth.js"></script>
+    <script type="module" src="js/services/sync/sync-ui.render.js"></script>
+    <script type="module" src="js/services/sync/sync-connection.actions.js"></script>
+    <script type="module" src="js/services/sync/sync-push-pull.core.js"></script>
+    <script type="module" src="js/services/sync/sync-progress.ui.js"></script>
+    <script type="module" src="js/services/sync/sync-engine.core.js"></script>
+    <script type="module" src="js/services/sync/sync-post-actions.js"></script>
+    <script type="module" src="js/services/sync.service.js"></script>
+    <!-- ДОБАВЛЕНО: Роли и Справочник объектов -->
+    <script type="module" src="js/services/permission.service.js"></script>
+    <script type="module" src="js/services/object-directory.service.js"></script>
+    <script type="module" src="js/services/contractor-directory.service.js"></script>
+
+    <!-- 2. Потом локальные данные -->
+    <script src="data/system_docs.js"></script>
+    <script src="data/system_nodes.js"></script>
+    <script src="data/system_twi.js"></script>
+    <script src="js/shared/template.utils.js"></script>
+    <script src="data/system_templates.js"></script>
+    <script src="data/system_templates.en.js"></script>
+    <script src="data/system_templates.sr-Latn.js"></script>
+
+    <!-- construction: loadModule('construction') → index.js (features + dist services) -->
+
+    <!-- === НОВЫЕ МОДУЛИ РОУТИНГА === -->
+    <script type="module" src="js/core/router.js"></script>
+    <script type="module" src="js/core/views.js"></script>
+
+    <!-- 3. Потом ядро приложения -->
+    <script type="module" src="js/services/storage/storage-db.core.js"></script>
+    <script type="module" src="js/services/storage/storage-converters.utils.js"></script>
+    <script type="module" src="js/services/storage/storage-cache-manager.js"></script>
+    <script type="module" src="js/services/storage/storage-offline-cache.utils.js"></script>
+    <script type="module" src="js/services/storage/storage-diagnostics.render.js"></script>
+    <script type="module" src="js/services/storage/storage-photo-manager.js"></script>
+    <script type="module" src="js/services/storage/storage-file-queue.actions.js"></script>
+    <script type="module" src="js/services/storage.service.js"></script>
+    <!-- service.locations (Vite/TS) — после storage; construction dist — через loadModule('construction') -->
+    <script type="module" src="js/dist/rbi-locations.js"></script>
+    <script type="module" src="js/services/settings.service.js"></script>
+    <script type="module" src="js/services/i18n.service.js"></script>
+    <script type="module" src="js/shared/system-templates-locale.js"></script>
+    <script type="module" src="js/services/session.service.js"></script>
+    <script type="module" src="js/services/inspection.service.js"></script>
+    <script type="module" src="js/services/contractor-metrics.service.js"></script>
+    <script type="module" src="js/services/report.service.js"></script>
+    <script type="module" src="js/services/file.service.js"></script>
+    <script type="module" src="js/services/task.service.js"></script>
+    <script type="module" src="js/services/sk.service.js"></script>
+    <script type="module" src="js/services/game.service.js"></script>
+    <script type="module" src="js/services/knowledge.service.js"></script>
+    <script type="module" src="js/services/analytics.service.js"></script>
+    <script type="module" src="js/services/ai.service.js"></script>
+    <script type="module" src="js/services/masterData.service.js"></script>
+    <script type="module" src="js/services/template.service.js"></script>
+    <script type="module" src="js/core/bootstrap.js"></script>
+    <script type="module" src="js/core/app-shell.js"></script>
+    <script type="module" src="js/core/app-shell.desktop.js"></script>
+    <script type="module" src="js/services/app-mode.service.js"></script>
+    <script type="module" src="js/services/company.service.js"></script>
+    <script type="module" src="js/services/user-context.service.js"></script>
+    <script type="module" src="js/shared/math.utils.js"></script>
+    <script src="js/shared/plan-panzoom.utils.js"></script>
+    <script type="module" src="js/shared/toast.utils.js"></script>
+    <script type="module" src="js/shared/form-draft.utils.js"></script>
+    <script type="module" src="js/shared/smart-input.utils.js"></script>
+    <script type="module" src="js/shared/photo-editor.utils.js"></script>
+    <script type="module" src="js/shared/photo-viewer-zoom.utils.js"></script>
+    <script type="module" src="js/shared/pdf-open.utils.js"></script>
+    <script type="module" src="js/shared/splash-screen.utils.js"></script>
+    <script type="module" src="js/shared/pwa-update.utils.js"></script>
+    <script type="module" src="js/shared/fab-export.utils.js"></script>
+    <script type="module" src="js/shared/layout.utils.js"></script>
+    <script type="module" src="js/shared/sync-ui-defer.utils.js"></script>
+    <script type="module" src="js/shared/notify.utils.js"></script>
+    <script type="module" src="js/shared/error-log.utils.js"></script>
+    <script type="module" src="js/shared/touch-gestures.utils.js"></script>
+    <script type="module" src="js/shared/ui-motion.utils.js"></script>
+    <script type="module" src="js/shared/snake-game.utils.js"></script>
+    <script type="module" src="js/shared/checklist-runner.js"></script>
+
+    <!-- Фаза 34 — единая точка инициализации модулей платформы -->
+    <script type="module" src="js/core/app.entry.js"></script>
+    <script type="module" src="js/core/module-loader.js"></script>
+    <script>
+        window.addEventListener('load', function () {
+            setTimeout(function () {
+                if (window.RBI && window.RBI.entry) {
+                    window.RBI.entry.init();
+                }
+            }, 0);
+        });
+    </script>
+
+    <!-- Pinch-to-zoom/Pan/Double-Tap модалки фото — перенесены в js/shared/photo-viewer-zoom.utils.js -->
+
+    <!-- ПОДКЛЮЧЕНИЕ PWA SERVICE WORKER — перенесено в js/shared/pwa-update.utils.js -->
+
+    <!-- === ПЛАВАЮЩАЯ КНОПКА СКАЧАТЬ PDF (ВСЕГДА ВИДНА НА НУЖНЫХ ВКЛАДКАХ) === -->
+    <!-- === ПЛАВАЮЩАЯ КНОПКА СКАЧАТЬ PDF (ВСЕГДА ВИДНА НА НУЖНЫХ ВКЛАДКАХ) === -->
+    <button id="fab-download-btn" data-fab-export-action="handleFabDownload"
+        class="fixed w-14 h-14 bg-indigo-500/50 backdrop-blur-md border border-white/20 text-white rounded-full items-center justify-center shadow-lg z-[500] active:scale-90 transition-all duration-300 hidden"
+        title="Скачать PDF">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+        </svg>
+    </button>
+    <!-- === ПУЛЬСИРУЮЩАЯ КНОПКА: ВЫХОД ИЗ ДЕМО (СЛЕВА СВЕРХУ) === -->
+    <button id="fab-exit-demo" data-settings-action="exitDemoMode"
+        class="fixed top-3 left-3 bg-red-600 text-white px-3 py-2 rounded-lg items-center shadow-[0_5px_15px_rgba(239,68,68,0.5)] z-[10000] active:scale-90 transition-all duration-300 hidden animate-pulse flex-row gap-1.5 border border-red-400"
+        title="Выйти из демо">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+        </svg>
+        <span class="fab-exit-demo-label text-[10px] font-black uppercase tracking-wider">Выйти из демо</span>
+    </button>
+
+    <!-- tutorial-overlay + tutorial-tooltip перенесено в js/modules/settings/features/tutorial.js -->
+    <!-- print-content перенесено в js/modules/quality/features/reports/reports.render.js (прямой потомок body) -->
+    <!-- etalon-constructor-view перенесено в js/modules/quality/features/etalon/etalon.render.js -->
+
+    <input type="file" id="task-photo-upload" accept="image/*" class="hidden"
+        data-tasks-action="rbi_handleTaskCompletionPhoto" data-tasks-action-val-type="event" data-action-event="change">
+    <input type="file" id="meeting-photo-upload" accept="image/*" class="hidden"
+        data-meetings-action="rbi_handleMeetingPhotoUpload" data-meetings-action-val-type="event" data-action-event="change">
+    <input type="file" id="fmea-photo-upload" accept="image/*" class="hidden"
+        data-game-action="rbi_handleFmeaPhotoUpload" data-game-action-val-type="event" data-action-event="change">
+
+
+
+
+
+
+
+    <!-- Splash Screen show/hide — перенесены в js/shared/splash-screen.utils.js -->
+</body>
+
+</html>

@@ -1,0 +1,758 @@
+/* js/shared/math.utils.js — Math Utils v0.2 */
+/* Реализация перенесена 1:1 из js/math.js (REMOVED) — формулы/веса/пороги не изменены. */
+/* IIFE-паттерн, без ES-импортов — совместим с текущей загрузкой */
+
+(function () {
+    'use strict';
+
+    if (typeof window === 'undefined') return;
+
+    window.RBI = window.RBI || {};
+    window.RBI.utils = window.RBI.utils || {};
+
+    window._metricsCache = {};
+    window._metricsCacheOrder = [];
+    var METRICS_CACHE_MAX = 40;
+
+    function _metricsCacheFingerprint(customArray, useSlidingWindow) {
+        // Короткий ключ вместо join всех id (огромные строки раздували RAM).
+        var ids = customArray.map(function (i) { return String(i && i.id != null ? i.id : ''); }).sort();
+        var h = 5381;
+        for (var n = 0; n < ids.length; n++) {
+            var s = ids[n];
+            for (var i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
+        }
+        return ids.length + '_' + (h >>> 0) + '_' + (useSlidingWindow ? '1' : '0');
+    }
+
+    function _metricsCacheGet(key) {
+        if (!window._metricsCache[key]) return null;
+        var i = window._metricsCacheOrder.indexOf(key);
+        if (i >= 0) {
+            window._metricsCacheOrder.splice(i, 1);
+            window._metricsCacheOrder.push(key);
+        }
+        return window._metricsCache[key];
+    }
+
+    function _metricsCacheSet(key, val) {
+        if (window._metricsCache[key]) {
+            var i = window._metricsCacheOrder.indexOf(key);
+            if (i >= 0) window._metricsCacheOrder.splice(i, 1);
+        }
+        window._metricsCache[key] = val;
+        window._metricsCacheOrder.push(key);
+        while (window._metricsCacheOrder.length > METRICS_CACHE_MAX) {
+            var old = window._metricsCacheOrder.shift();
+            if (old) delete window._metricsCache[old];
+        }
+    }
+
+    window.clearMetricsCache = function () {
+        window._metricsCache = {};
+        window._metricsCacheOrder = [];
+    };
+
+    // Вспомогательная функция для плоского массива
+    function getFlatList(checklist) {
+        if (!checklist) return [];
+        return checklist.flatMap(g => g.items);
+    }
+
+    // Документарный score: честный % без штрафов Kc/Kcrit и без потолка 84%.
+    // Возвращает null, если в списке нет ни одного проверенного документарного пункта.
+    function getDocumentaryScore(productState, flatList) {
+        let W_tot = 0, W_ok = 0, checkedCount = 0;
+        flatList.forEach(i => {
+            if (i.type !== 'documentary') return;
+            const s = productState[i.id];
+            if (!s) return;
+            checkedCount++;
+            const w = (s === 'fail_escalated') ? 3 : i.w;
+            W_tot += w;
+            if (s === 'ok') W_ok += w;
+        });
+        if (checkedCount === 0 || W_tot === 0) return null;
+        return Math.round((W_ok / W_tot) * 100);
+    }
+
+    // === БЛОК 1: ТЕКУЩИЙ УРК ОСМОТРА ===
+    function getProductMetrics(productState, customChecklist) {
+        let W_tot = 0;
+        let W_ok = 0;
+        let checkedCount = 0;
+
+        let n_B1_fail = 0;
+        let n_B2_chk = 0, n_B2_fail = 0;
+        let n_B3_fail = 0, b3_found = false;
+        let escalated_found = false;
+
+        const flatList = getFlatList(customChecklist);
+
+        // Штрафы (Kc/Kcrit) и итог считаются ТОЛЬКО по физическим пунктам —
+        // документарный брак не должен влиять на физическую оценку качества.
+        flatList.forEach(i => {
+            if (i.type === 'documentary') return;
+            const s = productState[i.id];
+            if (s) {
+                checkedCount++;
+                let currentWeight = i.w;
+                let isB3 = (i.w === 3), isB2 = (i.w === 2), isB1 = (i.w === 1);
+
+                // fail_escalated всегда считается как B3
+                if (s === 'fail_escalated') { currentWeight = 3; isB3 = true; isB2 = false; escalated_found = true; }
+
+                W_tot += currentWeight;
+                if (isB2) n_B2_chk++;
+
+                if (s === 'ok') {
+                    W_ok += currentWeight;
+                } else if (s === 'fail' || s === 'fail_escalated') {
+                    if (isB1) n_B1_fail++;
+                    if (isB2) n_B2_fail++;
+                    if (isB3) { n_B3_fail++; b3_found = true; }
+                }
+            }
+        });
+
+        const documentary = getDocumentaryScore(productState, flatList);
+
+        if (checkedCount === 0) {
+            // Физических пунктов не заполнено, но документарные могли быть — считать это "нет данных" для карточки.
+            if (documentary === null) return null;
+        }
+
+        let baseUrk = W_tot > 0 ? (W_ok / W_tot) * 100 : 0;
+        let Urk_base = Math.round(baseUrk);
+
+        let Kc = 1.0;
+        if (n_B2_chk > 0) {
+            let R_B2 = n_B2_fail / n_B2_chk;
+            if (R_B2 > 0 && R_B2 < 0.20) Kc = 0.95;
+            else if (R_B2 >= 0.20 && R_B2 < 0.50) Kc = 0.85;
+            else if (R_B2 >= 0.50) Kc = 0.70;
+        }
+
+        let Kcrit = b3_found ? 0.50 : 1.00;
+        let Urk_inspect = Math.round(baseUrk * Kc * Kcrit);
+
+        if (n_B2_fail > 0 || b3_found || Kc < 1.0 || Kcrit < 1.0) {
+            Urk_inspect = Math.min(Urk_inspect, 84);
+        }
+
+        let statusTxt = "", statusCls = "", isDanger = false, reason = "Соответствует нормативам";
+        let warnings = [];
+
+        if (b3_found || Urk_inspect < 70) {
+            statusTxt = "БРАК / СТОП"; statusCls = "tag-red"; isDanger = true;
+            if (escalated_found) reason = "Обнаружено превышение >1.5 (Авто B3)";
+            else if (b3_found) reason = "Обнаружен критический дефект (B3)";
+            else reason = "Низкий УрК (<70%) из-за концентрации дефектов";
+            warnings.push("❌ Обнаружен критический дефект. Требуется немедленное исправление.");
+        } else if (Urk_inspect >= 85) {
+            statusTxt = "ПРИНЯТО"; statusCls = "tag-green";
+        } else {
+            statusTxt = "ИСПРАВИТЬ"; statusCls = "tag-yellow";
+            reason = `Условный допуск (Потолок 84%). Наличие значимых дефектов B2.`;
+            warnings.push("⚠ Обнаружены значимые дефекты. Итог снижен.");
+        }
+
+        return {
+            final: Urk_inspect, physical: Urk_inspect, documentary,
+            baseUrkPerc: Urk_base, checkedCount, totalCount: flatList.filter(i => i.type !== 'documentary').length,
+            n_B1_fail, n_B2_fail, n_B3_fail, b3_found, kc: Kc, kcrit: Kcrit,
+            statusTxt, statusCls, isDanger, reason, warnings, escalated_found
+        };
+    }
+
+    // Волатильность
+    function calcVolatility(arr) {
+        if (arr.length < 2) return 0;
+        const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+        const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (arr.length - 1);
+        return Math.sqrt(variance);
+    }
+
+    // === БЛОК 2 и 3: ИНТЕГРАЛЬНЫЙ УРК ПОДРЯДЧИКА И ДОСТОВЕРНОСТЬ ===
+    function getContractorMetrics(customArray, userTemplatesData = {}, useSlidingWindow = true) {
+        if (!customArray || customArray.length === 0) return null;
+        // Мемоизация: если мы уже считали метрики для этого набора проверок - отдаем из кэша
+        const cacheKey = _metricsCacheFingerprint(customArray, useSlidingWindow);
+        const cached = _metricsCacheGet(cacheKey);
+        if (cached) return cached;
+        const sortedChronologically = [...customArray].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Если включено скользящее окно - берем последние 15. Иначе - берем ВСЕ проверки.
+        const recentWindow = useSlidingWindow ? sortedChronologically.slice(0, 15) : sortedChronologically;
+
+        const N = recentWindow.length;
+        if (N === 0) return null;
+
+        // templateKey может отсутствовать у части cloud/legacy записей — не валим всю Сводку.
+        let tKey = null;
+        for (let ti = 0; ti < recentWindow.length; ti++) {
+            if (recentWindow[ti] && recentWindow[ti].templateKey) {
+                tKey = recentWindow[ti].templateKey;
+                break;
+            }
+        }
+        if (!tKey && customArray[0] && customArray[0].templateKey) {
+            tKey = customArray[0].templateKey;
+        }
+        let flatList = [];
+        if (tKey) {
+            const type = String(tKey).split('_')[0];
+            const key = String(tKey).replace(type + '_', '');
+            const specificChecklist = type === 'sys' && window.SYSTEM_TEMPLATES && window.SYSTEM_TEMPLATES[key]
+                ? window.SYSTEM_TEMPLATES[key].groups
+                : (userTemplatesData[key] ? userTemplatesData[key].groups : []);
+            flatList = getFlatList(specificChecklist || []);
+        }
+
+        let urkValues = [];
+        let docValues = [];
+        let N_B3 = 0;
+        let itemStats = {};
+
+        recentWindow.forEach(inspection => {
+            if (inspection.metrics) {
+                urkValues.push(Number(inspection.metrics.final) || 0);
+                if (inspection.metrics.b3_found) N_B3++;
+
+                // Lazy recalculation: старые записи не содержат documentary — досчитываем на лету
+                // из сохранённого state по актуальному чек-листу, без изменения хранимых данных.
+                let docScore = inspection.metrics.documentary;
+                if (docScore === undefined && inspection.state) {
+                    docScore = getDocumentaryScore(inspection.state, flatList);
+                }
+                if (docScore !== null && docScore !== undefined) docValues.push(docScore);
+            }
+            if (inspection.state) {
+                Object.keys(inspection.state).forEach(itemId => {
+                    const s = inspection.state[itemId];
+                    if (!itemStats[itemId]) itemStats[itemId] = { chk: 0, fail: 0 };
+                    itemStats[itemId].chk++;
+                    if (s === 'fail' || s === 'fail_escalated') itemStats[itemId].fail++;
+                });
+            }
+        });
+
+        let sumUrk = urkValues.reduce((a, b) => a + b, 0);
+        let Urk_contr_base = Math.round(sumUrk / N);
+
+        const documentaryC = docValues.length > 0
+            ? Math.round(docValues.reduce((a, b) => a + b, 0) / docValues.length)
+            : null;
+
+        let max_R_i = 0;
+        flatList.forEach(i => {
+            // Считаем системность СТРОГО только по дефектам B2 (i.w === 2)
+            if (i.w === 2 && itemStats[i.id] && itemStats[i.id].chk > 0) {
+                let R_i = (itemStats[i.id].fail / itemStats[i.id].chk) * 100;
+                if (R_i > max_R_i) max_R_i = R_i;
+            }
+        });
+
+        let R_sys = max_R_i;
+        let Ks = 1.0;
+        if (R_sys >= 60.0) Ks = 0.50;
+        else if (R_sys >= 40.0) Ks = 0.70;
+        else if (R_sys >= 20.0) Ks = 0.85;
+        else if (R_sys >= 10.0) Ks = 0.95;
+
+        let R_B3 = (N_B3 / N) * 100;
+        let KB3 = 1.0;
+        if (R_B3 >= 30.0) KB3 = 0.50;
+        else if (R_B3 >= 20.0) KB3 = 0.70;
+        else if (R_B3 >= 10.0) KB3 = 0.85;
+        else if (R_B3 >= 5.0) KB3 = 0.90;
+        else if (R_B3 > 0) KB3 = 0.95;
+
+        let Urk_contr = Math.round(Urk_contr_base * Ks * KB3);
+        let capApplied = false;
+
+        if (Ks < 1.00 || KB3 < 1.00) {
+            if (Urk_contr > 84) { Urk_contr = 84; capApplied = true; }
+        }
+
+        let s = 0; let E = 0;
+        if (N >= 2) {
+            let mean = sumUrk / N;
+            let variance = urkValues.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / (N - 1);
+            s = Math.sqrt(variance);
+
+            // Коэффициент Стьюдента в зависимости от выборки N (включая малые)
+            let t_crit = 1.96;
+            if (N === 2) t_crit = 12.7;
+            else if (N === 3) t_crit = 4.3;
+            else if (N === 4) t_crit = 3.18;
+            else if (N === 5) t_crit = 2.78;
+            else if (N === 6) t_crit = 2.57;
+            else if (N >= 7 && N <= 10) t_crit = 2.3;
+            else if (N >= 11 && N <= 15) t_crit = 2.1;
+            else if (N >= 16 && N <= 23) t_crit = 2.0;
+            else if (N >= 24 && N <= 31) t_crit = 1.98;
+            else if (N >= 32 && N <= 50) t_crit = 1.97;
+
+            E = t_crit * (s / Math.sqrt(N));
+        }
+
+        // Точная градация достоверности рейтинга
+        let confidenceLevel = 'Сбор данных (N<7)';
+        let confCls = 'conf-low';
+        if (N >= 51) { confidenceLevel = 'Эталонный'; confCls = 'conf-high'; }
+        else if (N >= 32) { confidenceLevel = 'Стабильный'; confCls = 'conf-high'; }
+        else if (N >= 24) { confidenceLevel = 'Уверенный'; confCls = 'conf-med'; }
+        else if (N >= 16) { confidenceLevel = 'Базовый'; confCls = 'conf-med'; }
+        else if (N >= 7) { confidenceLevel = 'Предварительный'; confCls = 'conf-low'; }
+
+        // Новая формула индекса стабильности: MAX(0; 1 - S/50) * 100%
+        let stabilityIndex = Math.max(0, 1 - (s / 50)) * 100;
+        stabilityIndex = Math.round(stabilityIndex);
+
+        // Определение уровня стабильности и текстов для тултипов
+        let stabText = "", stabColor = "", stabDesc = "";
+        if (stabilityIndex >= 80) {
+            stabText = "Высокая"; stabColor = "text-green-600";
+            stabDesc = "«Работает как швейцарские часы». Результаты почти не меняются. Можно смело давать новые объёмы.";
+        } else if (stabilityIndex >= 60) {
+            stabText = "Средняя"; stabColor = "text-yellow-600";
+            stabDesc = "«Бывают хорошие дни, бывают не очень». Разброс заметный. Усилить выборочный контроль.";
+        } else if (stabilityIndex >= 40) {
+            stabText = "Низкая"; stabColor = "text-orange-500";
+            stabDesc = "«Сегодня густо, завтра пусто». Качество скачет. Доверять среднему рейтингу рискованно.";
+        } else {
+            stabText = "Критическая"; stabColor = "text-red-600";
+            stabDesc = "«Американские горки». Процесс непредсказуем. Ввести ежедневный 100% приём работ.";
+        }
+
+        let statusTxt = "В РАБОТЕ", statusCls = "tag-blue", isRedZone = false;
+        let riskStatus = "Низкий риск", riskCls = "risk-low";
+
+        if (Urk_contr < 70 || R_B3 >= 20.0 || R_sys >= 40.0) {
+            statusTxt = "КРАСНАЯ ЗОНА"; statusCls = "tag-red"; isRedZone = true; riskStatus = "Высокий риск"; riskCls = "risk-high";
+        } else if (Urk_contr >= 85 && R_B3 === 0 && R_sys < 10.0) {
+            statusTxt = "ОБРАЗЦОВОЕ КАЧЕСТВО"; statusCls = "tag-green";
+        } else {
+            statusTxt = "ЖЕЛТАЯ ЗОНА"; statusCls = "tag-yellow";
+            if (Urk_contr <= 84 || R_B3 >= 10.0 || stabilityIndex <= 60) { riskStatus = "Средний риск"; riskCls = "risk-med"; }
+        }
+
+        let reason = "Стабильное качество, без существенных штрафов";
+        if (capApplied) reason = "Применен потолок 84% (Наличие критических или системных дефектов)";
+        else if (R_sys >= 20.0) reason = `Снижение из-за системного брака (повторяемость ${R_sys.toFixed(1)}%)`;
+        else if (R_B3 >= 10.0) reason = `Снижение из-за доли осмотров с B3 (${R_B3.toFixed(1)}%)`;
+        const result = {
+            finalC: Urk_contr, physicalC: Urk_contr, documentaryC, baseUrkContrPerc: Urk_contr_base, count: N, maxFailRate: R_sys,
+            ks: Ks, kcritC: KB3, rateB3: R_B3, n_изделий_с_B3: N_B3, statusTxt, statusCls, isRedZone,
+            confStatus: confidenceLevel, confCls, stdDev: s, ci95_margin: E, volatility: s, stabilityIndex, stabText, stabColor, stabDesc, riskStatus, riskCls, reason
+        };
+
+        _metricsCacheSet(cacheKey, result);
+        return result;
+    }
+
+    // ГЕНЕРАТОР ЭКСПЕРТНОГО ЗАКЛЮЧЕНИЯ ИИ (Математика 4.0)
+    function getExpertConclusion(c, contractorName, templateTitle, count, safeId, customExpertConclusions = {}) {
+        const expertKey = contractorName + "_||_" + templateTitle;
+        const isRed = c.finalC < 70 || c.rateB3 >= 30 || c.isRedZone;
+        const safeExpertKeyForHtml = expertKey.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const isYellow = c.finalC >= 70 && c.finalC < 85 && !isRed;
+
+        const mainColor = isRed ? '#dc2626' : (isYellow ? '#d97706' : '#16a34a');
+        const bgColor = isRed ? '#fef2f2' : (isYellow ? '#fffbeb' : '#f0fdf4');
+        const borderColor = isRed ? '#fecaca' : (isYellow ? '#fde68a' : '#bbf7d0');
+
+        const qualText = isRed ? 'НИЗКОЕ' : (isYellow ? 'ПРИЕМЛЕМОЕ' : 'ВЫСОКОЕ');
+        const emoji = isRed ? '🔴' : (isYellow ? '🟡' : '🟢');
+
+        let b3Text = c.n_изделий_с_B3 > 0 ? `🚨 КРИТИЧЕСКИЙ УРОВЕНЬ: в ${c.n_изделий_с_B3} из ${count} независимых проверок (${c.rateB3.toFixed(1)}%) обнаружены дефекты категории B3. Это недопустимо для приемки объекта.` : '';
+
+        let probsText = [];
+        if (c.maxFailRate >= 20) probsText.push(`• 🔄 СИСТЕМНЫЙ БРАК: дефект повторяется в ${c.maxFailRate.toFixed(1)}% проверок. Коэффициент системности Ks = ${c.ks.toFixed(2)}`);
+        if (c.volatility >= 10) probsText.push(`• 📉 НЕСТАБИЛЬНОСТЬ: высокая волатильность результатов (${c.volatility.toFixed(1)} пункта). Качество скачет от проверки к проверке.`);
+        if (probsText.length === 0) probsText.push(`• ✅ Значимых системных отклонений и скачков качества не выявлено.`);
+
+        let recomsText = [];
+        if (isRed || c.n_изделий_с_B3 > 0) {
+            recomsText.push("• Провести внеплановое совещание с руководством подрядчика.");
+            recomsText.push("• Совместно разобрать причины критического брака (B3).");
+        } else if (isYellow) {
+            recomsText.push("• Рассмотреть необходимость проведения TWI-сессии (обучения) для бригады.");
+            recomsText.push("• Сфокусировать стройконтроль на приемке данного вида работ.");
+        } else {
+            recomsText.push("• Поблагодарить команду за удержание стабильного качества.");
+            recomsText.push("• Зафиксировать текущий процесс как 'Лучшую практику'.");
+        }
+
+        let verdictText = isRed ? "🔴 ЦЕЛЬ НА ПЛАНЕРКУ: Выяснить системные причины падения качества и разработать план корректирующих мероприятий." :
+                          (isYellow ? "🟡 ЦЕЛЬ НА ПЛАНЕРКУ: Согласовать превентивные меры для недопущения перехода дефектов в статус критических." :
+                                      "🟢 ЦЕЛЬ НА ПЛАНЕРКУ: Поддержание текущей динамики и поощрение бригад.");
+
+        // Сокращенный вариант текста, чтобы гарантированно влезал в рамки PDF
+        let plainText = `${emoji} Статус подрядчика: ${qualText} (${c.finalC}%).\n` +
+        (b3Text ? `\n[КРИТИЧЕСКИЙ РИСК]\n${b3Text}\n` : '') +
+        `\n[АНАЛИТИКА]\n${probsText.join('\n')}\n\n[ДЕЙСТВИЯ QBP]\n${verdictText}`;
+
+        let isCustom = false;
+        if (customExpertConclusions[expertKey]) {
+            plainText = customExpertConclusions[expertKey];
+            isCustom = true;
+        }
+
+        let contentUiHtml = '';
+        let pdfHtml = '';
+
+        if (isCustom) {
+            let safeText = plainText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            let uiText = safeText.replace(/^\[(.*?)\]/gm, '<div class="text-[11px] font-black text-primary uppercase mt-4 mb-1">$1</div>');
+            let pdfFormattedText = safeText.replace(/^\[(.*?)\]/gm, '<div style="font-size: 11px; font-weight: bold; color: #854d0e; text-transform: uppercase; margin-top: 10px; margin-bottom: 4px;">$1</div>');
+
+            contentUiHtml = `
+                <div class="p-3 min-[400px]:p-4 bg-yellow-50 dark:bg-yellow-900/30">
+                    <div class="text-[9px] font-bold text-yellow-700 dark:text-yellow-400 uppercase mb-2 flex items-center gap-1 bg-yellow-100 dark:bg-yellow-800/50 w-fit px-2 py-1 rounded"><span>⚠️</span> Текст скорректирован инженером</div>
+                    <div class="text-[11px] whitespace-pre-wrap leading-relaxed">${uiText}</div>
+                </div>`;
+
+            pdfHtml = `
+                <div style="margin-top: 20px; margin-bottom: 25px; border: 1px solid #fde047; border-radius: 8px; background: #fefce8; padding: 15px; page-break-inside: avoid;">
+                    <h3 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #fef08a; padding-bottom: 8px; margin-bottom: 15px; color: #854d0e;">⚠️ ЭКСПЕРТНОЕ ЗАКЛЮЧЕНИЕ (С КОРРЕКТИРОВКАМИ ИНЖЕНЕРА)</h3>
+                    <div style="font-size: 12px; line-height: 1.5; color: #1e293b; white-space: pre-wrap;">${pdfFormattedText}</div>
+                </div>`;
+        } else {
+            contentUiHtml = `
+                <div class="p-3 min-[400px]:p-4">
+                    <div class="text-[12px] font-bold mb-4 leading-relaxed" style="color: ${mainColor};">${emoji} Качество работ подрядчика "${contractorName}" по виду "${templateTitle}" оценивается как ${qualText} (${c.finalC}%).</div>
+                    ${b3Text ? `<div class="border border-red-200 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg mb-3 text-red-800 dark:text-red-400 text-[11px] font-bold leading-snug shadow-sm">${b3Text}</div>` : ''}
+                    <div class="border border-[var(--card-border)] bg-[var(--hover-bg)] p-3 rounded-lg mb-3 shadow-sm">
+                        <div class="text-[10px] font-black text-slate-500 uppercase mb-2">🔍 Выявленные проблемы</div>
+                        <div class="text-[11px] leading-snug space-y-1">${probsText.map(p => `<div>${p}</div>`).join('')}</div>
+                    </div>
+                    <div class="border border-sky-200 bg-sky-50 dark:bg-sky-900/20 dark:border-sky-800 p-3 rounded-lg mb-3 shadow-sm">
+                        <div class="text-[10px] font-black text-sky-600 dark:text-sky-400 uppercase mb-2">🔧 Рекомендации</div>
+                        <div class="text-[11px] text-sky-800 dark:text-sky-300 leading-snug space-y-1">${recomsText.map(r => `<div>${r}</div>`).join('')}</div>
+                    </div>
+                    <div class="p-3 rounded-lg mb-2 shadow-sm" style="background: ${bgColor}; border: 1px solid ${borderColor};">
+                        <div class="text-[10px] font-black uppercase mb-2" style="color: ${mainColor};">🎯 Вердикт</div>
+                        <div class="text-[11px] font-bold leading-snug">${verdictText.replace(/\n/g, '<br>')}</div>
+                    </div>
+                    <div class="text-right text-[9px] text-slate-400 font-bold uppercase mt-3">База расчета: ${count} независимых проверок</div>
+                </div>`;
+
+            pdfHtml = `
+                <div style="margin-top: 20px; margin-bottom: 25px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; padding: 15px; page-break-inside: avoid;">
+                    <h3 style="margin-top: 0; font-size: 14px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px;">🧠 ЭКСПЕРТНОЕ ЗАКЛЮЧЕНИЕ ИИ</h3>
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 15px; line-height: 1.4; color: ${mainColor};">${emoji} Качество работ подрядчика "${contractorName}" оценивается как ${qualText} (${c.finalC}%).</div>
+                    ${b3Text ? `<div style="border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; padding: 10px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 10px;">${b3Text}</div>` : ''}
+                    <div style="border: 1px solid #e2e8f0; background: white; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                        <div style="font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 5px;">🔍 Выявленные проблемы</div>
+                        <div style="font-size: 12px; line-height: 1.4; color: #334155;">${probsText.map(p => `<div>${p}</div>`).join('')}</div>
+                    </div>
+                    <div style="border: 1px solid #bae6fd; background: #f0f9ff; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                        <div style="font-size: 11px; font-weight: bold; color: #0284c7; text-transform: uppercase; margin-bottom: 5px;">🔧 Рекомендации</div>
+                        <div style="font-size: 12px; line-height: 1.4; color: #075985;">${recomsText.map(r => `<div>${r}</div>`).join('')}</div>
+                    </div>
+                    <div style="border: 1px solid ${borderColor}; background: ${bgColor}; padding: 10px; border-radius: 6px;">
+                        <div style="font-size: 11px; font-weight: bold; color: ${mainColor}; text-transform: uppercase; margin-bottom: 5px;">🎯 Вердикт</div>
+                        <div style="font-size: 12px; font-weight: bold; line-height: 1.4; color: #1e293b;">${verdictText.replace(/\n/g, '<br>')}</div>
+                    </div>
+                </div>`;
+        }
+
+        const uiHtml = `
+            <div class="mt-6 border border-[var(--card-border)] bg-[var(--card-bg)] rounded-xl shadow-sm overflow-hidden mb-6">
+                <div class="bg-[var(--hover-bg)] border-b border-[var(--card-border)] p-2 flex justify-between items-center gap-2">
+                    <div class="font-black text-[10px] min-[400px]:text-[11px] uppercase tracking-widest flex items-center gap-1 min-w-0 truncate ml-1">🧠 Смарт-Анализ</div>
+                    <div class="flex gap-1 shrink-0">
+                        <button onclick="editExpertText('${safeExpertKeyForHtml}', 'text_expert_${safeId}')" class="text-[10px] font-bold bg-[var(--card-bg)] border border-[var(--card-border)] px-2 py-1.5 rounded shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1">
+                            ✏️<span class="hidden min-[400px]:inline"> Редак.</span>
+                        </button>
+                        <button id="btn_copy_${safeId}" onclick="copyExpertText('btn_copy_${safeId}', 'text_expert_${safeId}')" class="text-[10px] font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400 px-2 py-1.5 rounded shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1">
+                            📋<span class="hidden min-[400px]:inline"> Копия</span>
+                        </button>
+                    </div>
+                    <textarea id="text_expert_${safeId}" class="hidden">${plainText}</textarea>
+                </div>
+                ${contentUiHtml}
+            </div>
+        `;
+
+        return { uiHtml, pdfHtml };
+    }
+
+    // === АГРЕГАЦИЯ И ЭТАПЫ (Из старого кода) ===
+    function getProductAggregated(location, contractorName, templateKey, historyArray, fullChecklist) {
+        const productStages = historyArray.filter(i =>
+            i.location === location &&
+            i.contractorName === contractorName &&
+            i.templateKey === templateKey
+        );
+        if (productStages.length === 0) return null;
+        let mergedState = {};
+        productStages.forEach(stage => { mergedState = { ...mergedState, ...stage.state }; });
+        return getProductMetrics(mergedState, fullChecklist);
+    }
+
+    function getStageMetrics(stageId, historyArray) {
+        const stageRecords = historyArray.filter(i => i.stageId === stageId);
+        if (stageRecords.length === 0) return null;
+
+        let totalUrk = 0; let sumB3 = 0; let totalChecks = stageRecords.length;
+        stageRecords.forEach(record => {
+            if (record.metrics) { totalUrk += record.metrics.final; sumB3 += record.metrics.n_B3_fail; }
+        });
+
+        const urkValues = stageRecords.map(r => r.metrics ? r.metrics.final : 0);
+        const volatility = calcVolatility(urkValues);
+
+        let stageConfidence = 'Низкая достоверность';
+        if (totalChecks >= 10) stageConfidence = 'Высокая достоверность';
+        else if (totalChecks >= 3) stageConfidence = 'Средняя достоверность';
+
+        if (volatility > 15 && stageConfidence === 'Высокая достоверность') stageConfidence = 'Средняя достоверность';
+        else if (volatility > 15 && stageConfidence === 'Средняя достоверность') stageConfidence = 'Низкая достоверность';
+        else if (volatility < 5 && stageConfidence === 'Средняя достоверность') stageConfidence = 'Высокая достоверность';
+
+        return { avgFinal: Math.round(totalUrk / totalChecks), count: totalChecks, totalB3: sumB3, volatility: volatility, confidence: stageConfidence };
+    }
+
+    // === БЛОК 4: ИНТЕГРАЛЬНЫЕ ПОКАЗАТЕЛИ ОБЪЕКТА (ИКО V2.0 - ВЗВЕШЕННЫЙ РИСК) ===
+    function getObjectIntegralMetrics(historyArray, userTemplatesData = {}) {
+        if (!historyArray || historyArray.length === 0) return null;
+
+        // Группируем проверки по связке: "Подрядчик + Вид работ"
+        // (Потому что один подрядчик может делать и фасад, и плитку - риски разные)
+        const grouped = {};
+        historyArray.forEach(item => {
+            const cName = item.contractorName || 'Не указан';
+            const tKey = item.templateKey;
+            const groupKey = `${cName}_||_${tKey}`;
+
+            if (!grouped[groupKey]) grouped[groupKey] = [];
+            grouped[groupKey].push(item);
+        });
+
+        let totalValidChecks = 0;
+        let redChecks = 0;
+        let yellowChecks = 0;
+        let greenChecks = 0;
+
+        let sum_Kop_x_Wr = 0; // Сумма (Опасность * Вес Риска)
+        let sum_Wr = 0;       // Сумма Весов
+
+        for (let groupKey in grouped) {
+            const cData = grouped[groupKey];
+            const N = cData.length;
+
+            // Исключаем связки со статусом "Сбор данных" (N < 7)
+            if (N >= 7) {
+                totalValidChecks += N;
+
+                // Считаем метрики
+                const m = getContractorMetrics(cData, userTemplatesData);
+                if (!m) continue;
+
+                // Распределяем количество проверок по зонам качества (для статистики)
+                if (m.finalC < 70) redChecks += N;
+                else if (m.finalC <= 84) yellowChecks += N;
+                else greenChecks += N;
+
+                // Получаем Вес Риска (Wr) для данного вида работ
+                const tKey = cData[0].templateKey;
+                const type = tKey.split('_')[0];
+                const key = tKey.replace(type + '_', '');
+
+                let Wr = 1.0; // Базовый вес для пользовательских шаблонов
+                if (type === 'sys' && window.SYSTEM_TEMPLATES[key]) {
+                    Wr = window.SYSTEM_TEMPLATES[key].riskWeight || 1.0;
+                } else if (type === 'user' && userTemplatesData[key]) {
+                    Wr = userTemplatesData[key].riskWeight || 1.0;
+                }
+
+                // Расчет коэффициента опасности (K_опасности_i)
+                let urk_frac = m.finalC / 100;
+                let stab_frac = m.stabilityIndex / 100;
+                let hasB3 = m.n_изделий_с_B3 > 0 ? 1 : 0;
+
+                // Опасность от 0 до 1 (1 - это 100% риск)
+                let K_op = 1 - (urk_frac * stab_frac * (1 - 0.5 * hasB3));
+
+                // Взвешиваем ТОЛЬКО по риску, игнорируя объем N
+                sum_Kop_x_Wr += (K_op * Wr);
+                sum_Wr += Wr;
+            }
+        }
+
+        if (totalValidChecks === 0 || sum_Wr === 0) return null; // Нет валидных данных
+
+        // Доли работ в зонах (в процентах от общего объема N)
+        const redZonePerc = Math.round((redChecks / totalValidChecks) * 100);
+        const yellowZonePerc = Math.round((yellowChecks / totalValidChecks) * 100);
+        const greenZonePerc = Math.round((greenChecks / totalValidChecks) * 100);
+
+        // Итоговый Индекс Критичности Объекта (ИКО) по новой модели
+        const IKO = sum_Kop_x_Wr / sum_Wr;
+
+        let ikoStatus = "";
+        let ikoColor = "";
+        // Пороги ИКО остаются прежними, так как K_op нормирован от 0 до 1
+        if (IKO < 0.30) { ikoStatus = "Низкий риск"; ikoColor = "text-green-600"; }
+        else if (IKO < 0.60) { ikoStatus = "Повышенный риск"; ikoColor = "text-orange-500"; }
+        else { ikoStatus = "Высокий риск"; ikoColor = "text-red-600"; }
+
+        return {
+            totalValidChecks,
+            redZonePerc,
+            yellowZonePerc,
+            greenZonePerc,
+            IKO: IKO.toFixed(2),
+            ikoStatus,
+            ikoColor
+        };
+    }
+
+    // Перенесено из app.js — сквозная утилита (analytics + tasks): номер ISO-недели для даты.
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    // Фильтр периода аналитики: D7/D14/D30/D90/D180/ALL/CUSTOM (+ алиасы WEEK/MONTH/DAY).
+    var ANALYTICS_PERIOD_DAYS = { D7: 7, D14: 14, D30: 30, D90: 90, D180: 180 };
+    function normalizeAnalyticsPeriod(sel) {
+        var s = sel || 'D30';
+        if (s === 'WEEK' || s === 'DAY') return 'D7';
+        if (s === 'MONTH') return 'D30';
+        if (s === 'ALL' || s === 'CUSTOM' || ANALYTICS_PERIOD_DAYS[s]) return s;
+        return 'D30';
+    }
+    /** Число дней окна; ALL/CUSTOM → null (без отсечения по дате / свой диапазон). */
+    function getAnalyticsPeriodDays(sel) {
+        var n = normalizeAnalyticsPeriod(sel);
+        return ANALYTICS_PERIOD_DAYS[n] || null;
+    }
+    /** Границы текущего и предыдущего скользящего окна (для Δ). ALL/CUSTOM → null. */
+    function getAnalyticsPrevPeriodBounds(sel, now) {
+        var days = getAnalyticsPeriodDays(sel);
+        if (!days) return null;
+        var endCurr = now ? new Date(now) : new Date();
+        var startCurr = new Date(endCurr);
+        startCurr.setDate(endCurr.getDate() - days);
+        var startPrev = new Date(startCurr);
+        startPrev.setDate(startCurr.getDate() - days);
+        return {
+            days: days,
+            startCurr: startCurr,
+            endCurr: endCurr,
+            startPrev: startPrev,
+            endPrev: startCurr,
+            trendLabel: 'к прош. ' + days + ' дн.',
+            hint: days + ' дней'
+        };
+    }
+
+    // Ключ группы подрядчик×объект для KPI-рейтингов (как в аналитике/печати).
+    function contractorGroupKey(item) {
+        if (typeof window.trendContractorKey === 'function') return window.trendContractorKey(item);
+        const name = String((item && item.contractorName) || 'Неизвестно').trim() || 'Неизвестно';
+        const proj = String(
+            (item && (item.project_display_name || item.projectName || item.project_canonical_key)) || 'Без объекта'
+        ).trim() || 'Без объекта';
+        return name + ' [' + proj + ']';
+    }
+
+    /**
+     * Средние рейтинги по подрядчикам среза.
+     * У каждого — getContractorMetrics со скользящим окном ≤15 (useSlidingWindow=true).
+     * KPI: приоритет подрядчиков с N≥7, иначе fallback по всем с метриками.
+     * Исключение «вся история» — только тендер: getContractorMetrics(..., false) напрямую.
+     */
+    function avgContractorRatingsFromChecks(items, keyFn) {
+        const grouped = {};
+        const keyOf = typeof keyFn === 'function' ? keyFn : contractorGroupKey;
+        (items || []).forEach(function (item) {
+            const k = keyOf(item);
+            (grouped[k] = grouped[k] || []).push(item);
+        });
+        let sumRel = 0, relN = 0, redContrCount = 0;
+        let sumUrk = 0, urkN = 0, sumDoc = 0, docN = 0;
+        let sumUrkAll = 0, urkAllN = 0, sumDocAll = 0, docAllN = 0;
+        let sumRelAll = 0, relAllN = 0;
+        const templates = (window.RBI && window.RBI.services && window.RBI.services.templates)
+            ? window.RBI.services.templates.getUserTemplates()
+            : (typeof window.userTemplates !== 'undefined' ? window.userTemplates : {});
+        for (const k in grouped) {
+            const m = getContractorMetrics(grouped[k], templates);
+            if (!m) continue;
+            sumUrkAll += m.baseUrkContrPerc;
+            urkAllN++;
+            sumRelAll += m.finalC;
+            relAllN++;
+            if (m.documentaryC != null) { sumDocAll += m.documentaryC; docAllN++; }
+            if (m.count >= 7) {
+                sumRel += m.finalC;
+                relN++;
+                sumUrk += m.baseUrkContrPerc;
+                urkN++;
+                if (m.documentaryC != null) { sumDoc += m.documentaryC; docN++; }
+                if (m.finalC < 70) redContrCount++;
+            }
+        }
+        return {
+            contrCount: Object.keys(grouped).length,
+            avgUrk: urkN > 0
+                ? Math.round(sumUrk / urkN)
+                : (urkAllN > 0 ? Math.round(sumUrkAll / urkAllN) : 0),
+            avgDoc: docN > 0
+                ? Math.round(sumDoc / docN)
+                : (docAllN > 0 ? Math.round(sumDocAll / docAllN) : null),
+            avgReliability: relN > 0
+                ? Math.round(sumRel / relN)
+                : (relAllN > 0 ? Math.round(sumRelAll / relAllN) : null),
+            relN,
+            redContrCount,
+            redContrPerc: relN > 0 ? Math.round((redContrCount / relN) * 100) : null
+        };
+    }
+
+    /* Публикация в window.* — обратная совместимость для потребителей вне RBI.utils.math */
+    window.getProductMetrics = getProductMetrics;
+    window.getContractorMetrics = getContractorMetrics;
+    window.avgContractorRatingsFromChecks = avgContractorRatingsFromChecks;
+    window.contractorGroupKey = contractorGroupKey;
+    window.getDocumentaryScore = getDocumentaryScore;
+    window.getFlatList = getFlatList;
+    window.getExpertConclusion = getExpertConclusion;
+    window.getObjectIntegralMetrics = getObjectIntegralMetrics;
+    window.getProductAggregated = getProductAggregated;
+    window.getStageMetrics = getStageMetrics;
+    window.getWeekNumber = getWeekNumber;
+    window.normalizeAnalyticsPeriod = normalizeAnalyticsPeriod;
+    window.getAnalyticsPeriodDays = getAnalyticsPeriodDays;
+    window.getAnalyticsPrevPeriodBounds = getAnalyticsPrevPeriodBounds;
+
+    window.RBI.utils.math = {
+        getProductMetrics: getProductMetrics,
+        getContractorMetrics: getContractorMetrics,
+        avgContractorRatingsFromChecks: avgContractorRatingsFromChecks,
+        contractorGroupKey: contractorGroupKey,
+        getDocumentaryScore: getDocumentaryScore,
+        getFlatList: getFlatList,
+        getObjectIntegralMetrics: getObjectIntegralMetrics,
+        getExpertConclusion: getExpertConclusion,
+        getProductAggregated: getProductAggregated,
+        getStageMetrics: getStageMetrics,
+        normalizeAnalyticsPeriod: normalizeAnalyticsPeriod,
+        getAnalyticsPeriodDays: getAnalyticsPeriodDays,
+        getAnalyticsPrevPeriodBounds: getAnalyticsPrevPeriodBounds,
+        clearCache: function () { window.clearMetricsCache(); }
+    };
+
+    if (window.RBI.registry) {
+        window.RBI.registry.register('utils.math', window.RBI.utils.math);
+    }
+
+    console.log('[RBI Utils] math loaded');
+}());

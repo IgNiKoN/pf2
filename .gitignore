@@ -1,0 +1,35 @@
+node_modules/
+.DS_Store
+*.log
+dist-ssr/
+.env
+.env.local
+
+# Не относится к работе приложения — рабочие материалы/документация/IDE
+.cursor/
+_ai/
+_backup/
+docs/
+RBI_Feedback_16.07.2026.json
+RBI_Feedback_21.07.2026.json
+RBI_Feedback_29.07.2026.json
+rbi-q-main.code-workspace
+Шаблон_акта_эталона_в_18.html
+агенты.docx
+user-manaul-SetlSoftICONA.pdf
+Карточка_проекта_RBI_Platform_итоговая.docx
+
+# ── Клиентские данные и материалы проекта не публикуются ──────────────────────
+# Репозиторий публичный: реальные формы заказчиков, ТЗ, демо и архивы остаются локально.
+construction-platform/*
+construction-platform/.DS_Store
+# ...но синтетические выгрузки для проверок импорта публикуем: данные в них выдуманы.
+!construction-platform/ВОР_20000_строк.csv
+!construction-platform/ВОР_ФКП_выгрузка.csv
+!construction-platform/ВОР_ФКП_сдвинутые_колонки.csv
+!construction-platform/формулы.xlsx
+!construction-platform/бомба.xlsx
+!construction-platform/макросы.xlsm
+
+# Служебные каталоги инструментов
+.npm-cache-tmp/

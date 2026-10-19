@@ -1,0 +1,54 @@
+/**
+ * RBI Brand Pack — единственный источник фирменных значений инсталляции.
+ *
+ * Ребренд покупателя (чеклист, без правок модулей):
+ * 1. Токены ниже — цвета / форма / chrome / шрифт.
+ * 2. Logo (runtime из настроек компании; fallback UI — shield в header/sidebar).
+ * 3. Favicon: ./favicon.ico, ./icons/favicon-16x16.png, ./icons/favicon-32x32.png
+ * 4. Apple touch: ./icons/apple-touch-icon.png
+ * 5. PWA icons (manifest.webmanifest): ./icons/icon-192.png, ./icons/icon-512.png,
+ *    ./icons/icon-maskable-512.png (splash также ./icons/icon-512-2.png)
+ * 6. При необходимости — одна строка <link> в index.html на css/brand/<install>.css
+ *
+ * Темы [data-theme=…] в css/style.css могут переопределять те же имена для режима.
+ * Каскад: этот файл → style.css → … → rbi-ui.css
+ *
+ * Дефолт инсталляции = RBI light v3 (портал), совпадает с DEFAULT_SETTINGS.theme
+ * `rbi-auto-v3` → `rbi-light-v3` — чтобы первый кадр не мигал indigo.
+ */
+
+:root {
+  /* Color — semantic aliases (= rbi-light-v3) */
+  --primary: #1c2b39;
+  --primary-hover: #273949;
+  --bg-main: #f4f4f4;
+  --card-bg: #ffffff;
+  --card-border: rgba(28, 43, 57, 0.14);
+  --text-main: #161616;
+  --text-muted: #6f6f6f;
+  --danger: #CD5A3E;
+  --success: #24a148;
+  --warning: #c49a5f;
+
+  /* Form — portal radius scale */
+  --rbi-radius-sm: 4px;
+  --rbi-radius-md: 8px;
+  --rbi-radius-lg: 16px;
+
+  /* Chrome */
+  --rbi-strip-h: 60px;
+  --rbi-subtab-fs: 13px;
+  --rbi-subtab-gap: 6px;
+  --rbi-subtab-pad-x: 10px;
+
+  /* Typography */
+  --rbi-font-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* Тема портала (rbi-light-v3/rbi-dark-v3, дефолт инсталляции) — осознанный
+   бренд-акцент на IBM Plex Sans вместо базового Inter. Источник истины для
+   font-family темы — этот токен (используется в style.css вместо литерала). */
+html[data-theme="rbi-light-v3"],
+html[data-theme="rbi-dark-v3"] {
+  --rbi-font-sans: 'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}

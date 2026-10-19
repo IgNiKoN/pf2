@@ -1,0 +1,400 @@
+/* css/app-shell.desktop.css — Desktop App Shell B (nav2 / topbar ≥1280)
+   Icon-rail (#app-sidebar) — отдельно в style.css (≥768).
+   768–1279: rail + mobile bottom-nav; ≥1280: rail + nav2 + desk topbar.
+   Density tiers: ≥1920 comfort / ≥2560 spacious (vars ниже). */
+
+/* === Density tokens (base = FHD) === */
+:root {
+    --desk-rail: 88px;
+    --desk-nav2: 200px;
+    --desk-chrome: calc(var(--desk-rail) + var(--desk-nav2));
+    --desk-topbar-h: 52px;
+    --desk-type-bump: 1;
+    --desk-gap-bump: 1;
+    /* FHD+ reading: почти на всю рабочую зону; жёсткий кап только на 4K */
+    --desk-read-max: 90rem;
+}
+
+/* === APP NAV2 (второй сайдбар экранов) ===
+   Классы .app-nav2-item — НЕ .nav-item: иначе bottom-nav CSS
+   (column / height:100% / скрытый .nav-text) ломает сайдбар. */
+#app-nav2 {
+    display: none;
+    position: fixed;
+    left: var(--desk-rail);
+    top: 0;
+    bottom: 0;
+    width: var(--desk-nav2);
+    z-index: 55;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 14px 10px;
+    background: var(--card-bg);
+    border-right: 1px solid var(--card-border);
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.app-nav2-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    flex: 0 0 auto;
+    padding: 2px 0 6px;
+    min-height: 28px;
+}
+
+.app-nav2-label {
+    font-size: calc(9px * var(--desk-type-bump));
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 4px 8px 4px 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+/* Демо-выход внутри nav2 (рядом с названием модуля) */
+#fab-exit-demo.fab-exit-demo--nav2 {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: auto !important;
+    flex: 0 0 auto;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    margin: 0 4px 0 0;
+    padding: 5px 8px !important;
+    border-radius: var(--rbi-radius-md) !important;
+    box-shadow: none !important;
+    animation: none !important;
+    font-size: 9px;
+    max-width: 46%;
+}
+#fab-exit-demo.fab-exit-demo--nav2 svg {
+    width: 12px;
+    height: 12px;
+}
+#fab-exit-demo.fab-exit-demo--nav2 .fab-exit-demo-label {
+    display: inline;
+}
+
+#app-nav2 .app-nav2-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: calc(10px * var(--desk-gap-bump));
+    width: 100% !important;
+    height: auto !important;
+    min-height: calc(40px * var(--desk-gap-bump));
+    max-height: none !important;
+    padding: 9px 10px !important;
+    margin: 0 !important;
+    border: none;
+    border-radius: var(--rbi-radius-md);
+    background: transparent;
+    color: var(--text-muted) !important;
+    cursor: pointer;
+    transform: none !important;
+    box-shadow: none !important;
+    flex: 0 0 auto !important;
+}
+
+#app-nav2 .app-nav2-item svg {
+    width: calc(18px * var(--desk-type-bump)) !important;
+    height: calc(18px * var(--desk-type-bump)) !important;
+    flex-shrink: 0;
+    stroke-width: 1.5 !important;
+    transform: none !important;
+}
+
+#app-nav2 .app-nav2-item .app-nav2-text {
+    font-size: calc(13px * var(--desk-type-bump)) !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    margin: 0 !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+    transform: none !important;
+    line-height: 1.25;
+    text-align: left;
+}
+
+#app-nav2 .app-nav2-item.active {
+    color: var(--primary) !important;
+    background: color-mix(in srgb, var(--primary) 14%, var(--card-bg)) !important;
+    transform: none !important;
+}
+
+#app-nav2 .app-nav2-item.active svg {
+    transform: none !important;
+    stroke-width: 1.75 !important;
+}
+
+#app-nav2 .app-nav2-item:hover {
+    background: var(--hover-bg);
+}
+
+#app-nav2 .app-nav2-item:active {
+    transform: none !important;
+}
+
+/* === DESK TOPBAR (slim) === */
+.app-desk-topbar {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: var(--desk-chrome);
+    height: var(--desk-topbar-h);
+    z-index: 58;
+    align-items: center;
+    gap: calc(10px * var(--desk-gap-bump));
+    padding: 0 16px;
+    background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+    border-bottom: 1px solid var(--card-border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-sizing: border-box;
+}
+
+.app-desk-brand-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex-shrink: 0;
+}
+
+.app-desk-brand-icon {
+    width: calc(36px * var(--desk-type-bump));
+    height: calc(36px * var(--desk-type-bump));
+    border-radius: var(--rbi-radius-md);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.app-desk-brand-icon.is-logo {
+    width: auto;
+    max-width: 7.25rem;
+    height: calc(36px * var(--desk-type-bump));
+    padding: 0 6px;
+}
+
+.app-desk-brand-shield {
+    width: 20px;
+    height: 20px;
+    color: var(--primary);
+}
+
+.app-desk-brand-logo {
+    display: block;
+    height: calc(28px * var(--desk-type-bump));
+    width: auto;
+    max-width: 108px;
+    object-fit: contain;
+}
+
+.app-desk-brand-logo.hidden {
+    display: none;
+}
+
+.app-desk-brand-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+}
+
+.app-desk-brand {
+    font-size: calc(13px * var(--desk-type-bump));
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--text-main);
+    white-space: nowrap;
+    line-height: 1.1;
+}
+
+.app-desk-brand em {
+    font-style: normal;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.app-desk-dev {
+    font-size: calc(8px * var(--desk-type-bump));
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.app-desk-sync {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.app-desk-spacer { flex: 1; min-width: 8px; }
+
+.app-desk-chip {
+    font-size: calc(10px * var(--desk-type-bump));
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 6px 10px;
+    border-radius: var(--rbi-radius-md);
+    border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--card-bg));
+    background: color-mix(in srgb, var(--primary) 14%, var(--card-bg));
+    color: var(--primary);
+    white-space: nowrap;
+}
+
+.app-desk-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: calc(12px * var(--desk-type-bump));
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.app-desk-avatar {
+    width: calc(28px * var(--desk-type-bump));
+    height: calc(28px * var(--desk-type-bump));
+    border-radius: var(--rbi-radius-md);
+    background: linear-gradient(135deg, var(--primary), var(--primary));
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: calc(11px * var(--desk-type-bump));
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+@media (min-width: 1280px) {
+    /* Shell B: bottom-nav скрыт; экраны модуля — в #app-nav2 */
+    #main-bottom-nav.bottom-nav {
+        display: none !important;
+    }
+
+    #app-nav2:not([hidden]) {
+        display: flex;
+    }
+
+    body.has-app-nav2 #app-desk-topbar:not([hidden]) {
+        display: flex;
+    }
+
+    body.has-app-sidebar.has-app-nav2 .header-fixed {
+        left: var(--desk-chrome);
+    }
+
+    body.has-app-nav2.nav-pos-auto .header-fixed,
+    body.has-app-nav2.nav-pos-top .header-fixed {
+        top: 0;
+    }
+
+    /* Shell B: desk-topbar заменяет mobile #main-header целиком — не сосуществуют.
+       Вызывающий код (views.js/app-mode-utils.js/construction-v2) не знает про
+       desk-topbar и может выставить display:block — глушим на уровне chrome. */
+    body.has-desk-topbar #main-header {
+        display: none !important;
+    }
+
+    body.has-app-sidebar.has-app-nav2 {
+        box-sizing: border-box;
+        padding-left: var(--desk-chrome);
+    }
+
+    /* Рабочая область на всю ширину (не mobile max-w-4xl) */
+    body.has-app-nav2 #app-root {
+        max-width: none;
+        width: 100%;
+        padding-bottom: 1.5rem;
+    }
+
+    body.has-desk-topbar #app-root {
+        padding-top: 0;
+    }
+
+    body.has-app-nav2 #header-inner {
+        max-width: none;
+    }
+}
+
+/* Theme surfaces for desktop shell */
+body.has-desk-topbar,
+body.has-app-nav2 {
+    background: var(--bg-main);
+    color: var(--text-main);
+}
+
+body.has-desk-topbar #app-root,
+body.has-app-nav2 #app-root {
+    background: transparent;
+    color: var(--text-main);
+}
+
+/* === Density: Comfort (≥1920) === */
+@media (min-width: 1920px) {
+    :root {
+        --desk-rail: 96px;
+        --desk-nav2: 220px;
+        --desk-topbar-h: 56px;
+        --desk-type-bump: 1.06;
+        --desk-gap-bump: 1.1;
+        --desk-read-max: 90rem;
+    }
+
+    body.has-desk-topbar #app-sidebar,
+    body.has-app-nav2 #app-sidebar {
+        width: var(--desk-rail);
+    }
+
+    #app-nav2 {
+        padding: calc(14px * var(--desk-gap-bump)) calc(10px * var(--desk-gap-bump));
+    }
+
+    .app-desk-topbar {
+        padding: 0 calc(16px * var(--desk-gap-bump));
+    }
+}
+
+/* === Density: Spacious (≥2560) === */
+@media (min-width: 2560px) {
+    :root {
+        --desk-rail: 104px;
+        --desk-nav2: 240px;
+        --desk-topbar-h: 60px;
+        --desk-type-bump: 1.12;
+        --desk-gap-bump: 1.18;
+        --desk-read-max: 96rem;
+    }
+
+    body.has-desk-topbar #app-sidebar,
+    body.has-app-nav2 #app-sidebar {
+        width: var(--desk-rail);
+    }
+}

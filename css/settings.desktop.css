@@ -1,0 +1,150 @@
+/**
+ * Desktop Настройки (≥1280, .rbi-settings-desktop-wide).
+ * Platform surface: sticky strip + left section rail + stage.
+ */
+
+#app-root.rbi-settings-desktop-wide {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+body.rbi-settings-desktop-wide.has-desk-topbar {
+  padding-top: 0 !important;
+}
+
+body.rbi-settings-desktop-wide.has-desk-topbar #app-root,
+body.rbi-settings-desktop-wide.has-desk-topbar #app-root.rbi-settings-desktop-wide {
+  padding-top: var(--desk-topbar-h) !important;
+}
+
+body.rbi-settings-desktop-wide.has-desk-topbar #app-content {
+  padding-top: 0 !important;
+}
+
+body.rbi-settings-desktop-wide #tab-settings {
+  padding-bottom: 1.25rem !important;
+  max-width: none !important;
+  width: 100% !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: calc(100vh - 4.5rem);
+}
+
+/* Sticky strip — base from rbi-ui.css; desk-specific inner */
+body.rbi-settings-desktop-wide .settings-desk-topbar-strip-inner {
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.75rem !important;
+  padding: 0 1rem !important;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-topbar-label {
+  font-size: var(--rbi-subtab-fs, 13px);
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-topbar-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Hide mobile sticky chrome leftovers */
+body.rbi-settings-desktop-wide #tab-settings > .sticky-top-panel {
+  display: none !important;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-body {
+  display: grid;
+  grid-template-columns: minmax(11.5rem, 14rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  width: 100%;
+  margin-top: 0.75rem;
+  box-sizing: border-box;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-rail {
+  position: sticky;
+  top: calc(var(--desk-topbar-h, 52px) + var(--rbi-strip-h, 48px) + 0.5rem);
+  align-self: start;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-md, 12px);
+  padding: 0.4rem;
+  box-shadow: var(--rbi-card-shadow, none);
+}
+
+body.rbi-settings-desktop-wide .settings-desk-rail #settings-subnav {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  gap: 0.25rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-rail .settings-subnav-btn {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  padding: 0.55rem 0.7rem !important;
+  border-radius: var(--rbi-radius-sm, 9px) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-rail .settings-subnav-scroll-hint {
+  display: none !important;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-stage {
+  min-width: 0;
+  max-width: var(--desk-read-max, 90rem);
+}
+
+body.rbi-settings-desktop-wide .settings-desk-stage .settings-panels {
+  display: block;
+}
+
+body.rbi-settings-desktop-wide .settings-desk-stage [data-settings-panel] {
+  max-width: none;
+}
+
+@media (min-width: 1920px) {
+  body.rbi-settings-desktop-wide .settings-desk-body {
+    grid-template-columns: minmax(13rem, 15rem) minmax(0, 1fr);
+    gap: calc(1rem * var(--desk-gap-bump, 1));
+  }
+}

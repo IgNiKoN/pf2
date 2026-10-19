@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBI Quality — Отчёт</title>
+    <meta name="theme-color" content="#1c2b39">
+
+    <script src="./libs/supabase-js.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background: #f1f5f9;
+            color: #0f172a;
+            font-family: Arial, sans-serif;
+        }
+
+        #status {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .box {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 24px;
+            max-width: 460px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .title {
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #1c2b39;
+            margin-bottom: 8px;
+        }
+
+        .text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        #report-root {
+            background: white;
+            min-height: 100vh;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .report-viewer {
+            max-width: 1180px;
+            margin: 0 auto;
+            background: #ffffff;
+        }
+
+        .report-viewer img {
+            max-width: 100%;
+            height: auto;
+            cursor: zoom-in;
+        }
+
+        .report-viewer img.report-qr,
+        .report-viewer img[alt="qr"] {
+            cursor: default;
+        }
+
+        .report-viewer table {
+            max-width: 100%;
+        }
+
+        /* Снимки PDF часто с max-height/overflow:hidden под 1 лист — в HTML показываем целиком */
+        .report-viewer .no-break,
+        .report-viewer [style*="overflow:hidden"],
+        .report-viewer [style*="overflow: hidden"],
+        .qr-public-report .no-break,
+        .qr-public-report [style*="overflow:hidden"],
+        .qr-public-report [style*="overflow: hidden"] {
+            overflow: visible !important;
+            max-height: none !important;
+            height: auto !important;
+        }
+
+        .report-viewer .pdf-page-break,
+        .report-viewer .page-break-before,
+        .qr-public-report .pdf-page-break,
+        .qr-public-report .page-break-before {
+            display: block !important;
+            height: 0 !important;
+            margin: 28px 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            border-top: 2px dashed #cbd5e1 !important;
+        }
+
+        @media (max-width: 768px) {
+            #report-root {
+                padding: 8px;
+                overflow-x: hidden;
+            }
+
+            .report-viewer,
+            .qr-public-report {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            /* PDF A3 → мобильный поток: не оставляем 4–6 колонок на 360px */
+            .report-viewer table,
+            .qr-public-report table,
+            .report-viewer thead,
+            .qr-public-report thead,
+            .report-viewer tbody,
+            .qr-public-report tbody {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .report-viewer tr,
+            .qr-public-report tr {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                width: 100% !important;
+                gap: 8px;
+                margin: 0 0 8px 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .report-viewer td,
+            .qr-public-report td,
+            .report-viewer th,
+            .qr-public-report th {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                box-sizing: border-box !important;
+                vertical-align: top !important;
+            }
+
+            /* KPI/SK-плитки (16–33%) — по 2 в ряд; крупные колонки (50%+) — на всю ширину */
+            .report-viewer td[style*="width:16"],
+            .qr-public-report td[style*="width:16"],
+            .report-viewer td[style*="width:20"],
+            .qr-public-report td[style*="width:20"],
+            .report-viewer td[style*="width:25"],
+            .qr-public-report td[style*="width:25"],
+            .report-viewer td[style*="width:33"],
+            .qr-public-report td[style*="width:33"] {
+                width: calc(50% - 4px) !important;
+                flex: 0 0 calc(50% - 4px) !important;
+            }
+
+            .report-viewer td[style*="width:32"],
+            .qr-public-report td[style*="width:32"],
+            .report-viewer td[style*="width:35"],
+            .qr-public-report td[style*="width:35"],
+            .report-viewer td[style*="width:46"],
+            .qr-public-report td[style*="width:46"],
+            .report-viewer td[style*="width:50"],
+            .qr-public-report td[style*="width:50"],
+            .report-viewer td[style*="width: 50"],
+            .qr-public-report td[style*="width: 50"],
+            .report-viewer td[style*="width:60"],
+            .qr-public-report td[style*="width:60"],
+            .report-viewer td[style*="width:65"],
+            .qr-public-report td[style*="width:65"],
+            .report-viewer td[style*="width:68"],
+            .qr-public-report td[style*="width:68"] {
+                width: 100% !important;
+                flex: 0 0 100% !important;
+            }
+
+            /* Плитки растут по контенту — без наезда из‑за PDF height:58px */
+            .report-viewer td > div,
+            .qr-public-report td > div {
+                height: auto !important;
+                max-height: none !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+                white-space: normal !important;
+            }
+
+            .report-viewer [style*="columns:"],
+            .qr-public-report [style*="columns:"] {
+                columns: 1 !important;
+                -webkit-columns: 1 !important;
+            }
+
+            .report-viewer [style*="display: grid"],
+            .report-viewer [style*="display:grid"],
+            .qr-public-report [style*="display: grid"],
+            .qr-public-report [style*="display:grid"] {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+
+            .report-viewer [style*="position:absolute"],
+            .report-viewer [style*="position: absolute"],
+            .qr-public-report [style*="position:absolute"],
+            .qr-public-report [style*="position: absolute"] {
+                position: relative !important;
+                inset: auto !important;
+                height: auto !important;
+            }
+
+            /* Таблицы с заголовками (сводка аудитов и т.п.) — горизонтальный скролл, не каша из ячеек */
+            .report-viewer table:has(th),
+            .qr-public-report table:has(th) {
+                display: block !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+                margin-bottom: 12px !important;
+            }
+
+            .report-viewer table:has(th) thead,
+            .qr-public-report table:has(th) thead,
+            .report-viewer table:has(th) tbody,
+            .qr-public-report table:has(th) tbody {
+                display: table !important;
+                width: 100% !important;
+                min-width: 560px;
+            }
+
+            .report-viewer table:has(th) tr,
+            .qr-public-report table:has(th) tr {
+                display: table-row !important;
+                flex-wrap: nowrap !important;
+                gap: 0 !important;
+                margin: 0 !important;
+            }
+
+            .report-viewer table:has(th) th,
+            .qr-public-report table:has(th) th,
+            .report-viewer table:has(th) td,
+            .qr-public-report table:has(th) td {
+                display: table-cell !important;
+                width: auto !important;
+                flex: none !important;
+                padding: 4px 3px !important;
+                white-space: nowrap !important;
+            }
+
+            .report-viewer h1,
+            .qr-public-report h1 { font-size: 18px !important; line-height: 1.25 !important; }
+            .report-viewer h2,
+            .qr-public-report h2 { font-size: 15px !important; }
+            .report-viewer h3,
+            .qr-public-report h3 { font-size: 13px !important; }
+
+            .report-viewer div,
+            .qr-public-report div {
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .report-viewer img,
+            .qr-public-report img {
+                max-width: 100% !important;
+                cursor: zoom-in;
+            }
+
+            .report-viewer img.report-qr,
+            .qr-public-report img.report-qr,
+            .report-viewer img[alt="qr"],
+            .qr-public-report img[alt="qr"] {
+                width: 72px !important;
+                max-width: 72px !important;
+                height: auto !important;
+                cursor: default !important;
+            }
+
+            .report-viewer img.report-photo-fixed {
+                width: auto !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: 240px !important;
+                object-fit: contain !important;
+                display: block !important;
+                margin: 0 auto !important;
+                border-radius: 10px !important;
+                background: #f8fafc !important;
+                cursor: zoom-in !important;
+            }
+
+            .report-viewer .report-photo-fixed-box {
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 6px !important;
+                background: #f8fafc !important;
+            }
+
+            .report-viewer .report-photo-fixed-card,
+            .report-viewer .report-photo-fixed-caption {
+                height: auto !important;
+                min-height: 0 !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            #report-root {
+                padding: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="status">
+        <div class="box">
+            <div class="title">RBI Quality</div>
+            <div class="text">Загрузка отчёта...</div>
+        </div>
+    </div>
+
+    <div id="report-root" style="display:none;"></div>
+
+    <script>
+        const APP_CONFIG = {
+            SUPABASE_URL: 'https://api.rbi-q.ru',
+            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc3NTA3MjAwLCJleHAiOjE5MzUyNzM2MDB9.f2s_pInfJu74ptaavpJx7J3I6Arwavcjnkzl1z39wPk'
+        };
+
+        function showStatus(title, text) {
+            document.getElementById('status').style.display = 'flex';
+            document.getElementById('report-root').style.display = 'none';
+            document.getElementById('status').innerHTML = `
+                <div class="box">
+                    <div class="title">${title}</div>
+                    <div class="text">${text}</div>
+                </div>
+            `;
+        }
+        function enableImageViewer(root) {
+            if (!root) return;
+
+            let overlay = document.getElementById('image-viewer-overlay');
+
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'image-viewer-overlay';
+                overlay.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.94);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
+            cursor: zoom-out;
+        `;
+
+                overlay.innerHTML = `
+            <img id="image-viewer-img" src="" style="
+                max-width: 100%;
+                max-height: 92vh;
+                width: auto;
+                height: auto;
+                object-fit: contain;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0,0,0,.45);
+                background: white;
+            ">
+        `;
+
+                overlay.addEventListener('click', () => {
+                    overlay.style.display = 'none';
+                    document.getElementById('image-viewer-img').src = '';
+                    document.body.style.overflow = '';
+                });
+
+                document.body.appendChild(overlay);
+            }
+
+            function isQrOrLogo(img) {
+                const style = String(img.getAttribute('style') || '').toLowerCase();
+                const src = String(img.getAttribute('src') || '').toLowerCase();
+                const alt = String(img.getAttribute('alt') || '').toLowerCase();
+                const cls = String(img.className || '').toLowerCase();
+
+                if (cls.includes('report-qr')) return true;
+                if (alt.includes('logo') || alt.includes('qr')) return true;
+                if (src.includes('logo') || src.includes('favicon') || src.includes('icon-')) return true;
+
+                const smallSquare =
+                    /width\s*:\s*(45|50|55|60|65|70|75)px/.test(style) &&
+                    /height\s*:\s*(45|50|55|60|65|70|75)px/.test(style);
+
+                return smallSquare;
+            }
+
+            function fixReportPhoto(img) {
+                if (!img || isQrOrLogo(img)) return;
+
+                img.classList.add('report-photo-fixed');
+
+                img.style.setProperty('width', 'auto', 'important');
+                img.style.setProperty('max-width', '100%', 'important');
+                img.style.setProperty('height', 'auto', 'important');
+                img.style.setProperty('max-height', '240px', 'important');
+                img.style.setProperty('object-fit', 'contain', 'important');
+                img.style.setProperty('display', 'block', 'important');
+                img.style.setProperty('margin', '0 auto', 'important');
+                img.style.setProperty('cursor', 'zoom-in', 'important');
+                img.style.setProperty('border-radius', '10px', 'important');
+                img.style.setProperty('background', '#f8fafc', 'important');
+
+                let el = img.parentElement;
+                let depth = 0;
+
+                while (el && el !== root && depth < 5) {
+                    el.style.setProperty('height', 'auto', 'important');
+                    el.style.setProperty('min-height', '0', 'important');
+                    el.style.setProperty('max-height', 'none', 'important');
+                    el.style.setProperty('overflow', 'visible', 'important');
+                    el.style.setProperty('box-sizing', 'border-box', 'important');
+
+                    if (depth === 0) {
+                        el.classList.add('report-photo-fixed-box');
+                        el.style.setProperty('display', 'flex', 'important');
+                        el.style.setProperty('align-items', 'center', 'important');
+                        el.style.setProperty('justify-content', 'center', 'important');
+                        el.style.setProperty('padding', '6px', 'important');
+                        el.style.setProperty('background', '#f8fafc', 'important');
+                    }
+
+                    if (depth === 1) {
+                        el.classList.add('report-photo-fixed-card');
+                    }
+
+                    if (depth === 2) {
+                        el.classList.add('report-photo-fixed-caption');
+                    }
+
+                    el = el.parentElement;
+                    depth++;
+                }
+            }
+
+            function fixAllImages() {
+                root.querySelectorAll('img').forEach((img) => {
+                    fixReportPhoto(img);
+
+                    if (!img.complete) {
+                        img.addEventListener('load', () => fixReportPhoto(img), { once: true });
+                    }
+                });
+            }
+
+            fixAllImages();
+            setTimeout(fixAllImages, 300);
+            setTimeout(fixAllImages, 1000);
+
+            root.onclick = function (e) {
+                const img = e.target && e.target.closest ? e.target.closest('img') : null;
+                if (!img) return;
+                if (isQrOrLogo(img)) return;
+
+                const src = img.currentSrc || img.getAttribute('src');
+                if (!src) return;
+
+                document.getElementById('image-viewer-img').src = src;
+                overlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            };
+        }
+        async function loadReport() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token') || params.get('id');
+
+            if (!token) {
+                showStatus('Отчёт не найден', 'В ссылке отсутствует токен отчёта.');
+                return;
+            }
+
+            try {
+                const client = supabase.createClient(APP_CONFIG.SUPABASE_URL, APP_CONFIG.SUPABASE_KEY);
+
+                const { data, error } = await client.rpc('get_public_report_by_token', {
+                    p_token: token
+                });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    showStatus('Отчёт недоступен', 'Ссылка недействительна, отчёт удалён или срок доступа истёк.');
+                    return;
+                }
+
+                const report = data[0];
+
+                document.getElementById('status').style.display = 'none';
+                const root = document.getElementById('report-root');
+                root.style.display = 'block';
+                root.innerHTML = `<div class="report-viewer">${report.html_content}</div>`;
+                enableImageViewer(root);
+                document.title = 'RBI Quality — Отчёт';
+
+            } catch (e) {
+                console.error(e);
+                showStatus('Ошибка загрузки', 'Не удалось загрузить отчёт. Проверьте подключение к интернету.');
+            }
+        }
+
+        loadReport();
+    </script>
+</body>
+
+</html>

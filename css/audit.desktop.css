@@ -1,0 +1,764 @@
+/* css/audit.desktop.css — Desktop Осмотр ≥1280 (Pattern G)
+   Gate: body/app-root.rbi-audit-desktop-wide
+*/
+
+body.rbi-audit-desktop-wide #app-root.rbi-audit-desktop-wide,
+body.rbi-audit-desktop-wide #app-root {
+  max-width: none;
+  width: 100%;
+}
+
+body.rbi-audit-desktop-wide.has-desk-topbar {
+  padding-top: 0 !important;
+}
+
+body.rbi-audit-desktop-wide.has-desk-topbar #app-root,
+body.rbi-audit-desktop-wide.has-desk-topbar #app-root.rbi-audit-desktop-wide {
+  padding-top: var(--desk-topbar-h) !important;
+  margin-top: 0 !important;
+}
+
+body.rbi-audit-desktop-wide.has-desk-topbar #app-content {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Shell виден только под wide-gate — иначе orphan после гонки навигации
+   остаётся display:flex поверх Настроек/других вкладок. */
+#audit-desktop-shell {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+body.rbi-audit-desktop-wide #audit-desktop-shell {
+  display: flex;
+}
+
+/* Реальный запас высоты под закреплённой шапкой (topbar + strip + chrome,
+   chrome-h — JS-измерение, см. audit.desktop.render.js:syncChromeHeightVar).
+   Общая переменная для .audit-desk-side И .audit-desk-plan — раньше план
+   считал свой max-height от голых vh (без учёта высоты шапки), из-за чего
+   на невысоких экранах (ноутбук, MacBook Air 15 и т.п.) план оказывался
+   выше, чем реально остаётся места под sticky-шапкой, и его SVG-иконка +
+   подпись обрезались снизу overflow:hidden. */
+body.rbi-audit-desktop-wide.has-desk-topbar #audit-desktop-shell {
+  --audit-desk-avail-h: calc(100vh - var(--desk-topbar-h, 52px) - var(--rbi-strip-h, 48px) - var(--audit-desk-chrome-h, 0px));
+}
+
+body.rbi-audit-desktop-wide:not(.has-desk-topbar) #audit-desktop-shell {
+  --audit-desk-avail-h: calc(100vh - var(--rbi-strip-h, 48px) - var(--audit-desk-chrome-h, 0px));
+}
+
+/* ===== CHROME — как subtabs у аналитики/БЗ: sticky full-bleed под desk topbar =====
+   Закреплена вся верхняя часть (объект проверки + группы пунктов чек-листа) —
+   при скролле чек-листа/плана остаётся на экране. Высота динамическая (группы
+   могут занимать 1-2 строки), поэтому реальную высоту меряет JS
+   (audit.desktop.render.js:syncChromeHeightVar) и пишет в --audit-desk-chrome-h
+   на shell — от неё зависит top у .audit-desk-side (см. ниже), чтобы план не
+   уезжал под закреплённую шапку. */
+.audit-desk-chrome {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex-shrink: 0;
+  background: var(--bg-main);
+  border: 0;
+  border-radius: 0;
+  padding: 0.6rem 0 0.7rem;
+  position: sticky;
+  top: calc(var(--desk-topbar-h, 52px) + var(--rbi-strip-h, 48px));
+  z-index: 10;
+  box-shadow: 0 6px 10px -8px rgba(0, 0, 0, 0.18);
+}
+
+body:not(.has-desk-topbar) .audit-desk-chrome {
+  top: var(--rbi-strip-h, 48px);
+}
+
+/* Единая плоская карточка (как строка фильтров у Аналитики) вместо двух
+   боксов с заголовками/подсказками — строка полей объекта + (если есть)
+   строка групп пунктов ниже, разделённые тонкой линией. */
+.audit-desk-chrome-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  background: var(--card-bg, var(--card-bg));
+  border: 1px solid var(--card-border, var(--card-border));
+  border-radius: var(--rbi-radius-lg);
+  padding: 0.65rem 0.75rem;
+}
+
+.audit-desk-chrome-row {
+  min-width: 0;
+}
+
+.audit-desk-chrome-row-groups {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--card-border, var(--card-border));
+}
+
+.audit-desk-chrome-row-groups:has(#audit-group-nav:empty),
+.audit-desk-chrome-row-groups:has([data-audit-desk-slot-nav]:empty) {
+  display: none;
+}
+
+/* Sticky audit topbar-strip — css/rbi-ui.css (layout inner + brand ниже) */
+
+.audit-desk-topbar-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.audit-desk-topbar-label {
+  font-size: var(--rbi-subtab-fs, 13px);
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.audit-desk-topbar-sub {
+  font-size: var(--rbi-subtab-fs, 13px);
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.audit-desk-topbar-tpl {
+  display: flex;
+  align-items: center;
+  flex: 0 1 320px;
+  min-width: 180px;
+  max-width: 360px;
+}
+
+/* legacy headstrip (на случай старого DOM до rebuild) */
+.audit-desk-zone-headstrip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  padding: 0.7rem 0.95rem;
+}
+
+.audit-desk-zone-headstrip .audit-desk-chrome-titles {
+  min-width: 0;
+  flex: 1 1 200px;
+}
+
+.audit-desk-zone-headstrip .audit-desk-chrome-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-main, var(--text-main));
+}
+
+.audit-desk-zone-headstrip .audit-desk-chrome-sub {
+  margin: 0.2rem 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.audit-desk-zone-headstrip .audit-desk-zone-tpl {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 360px;
+  min-width: 220px;
+  max-width: 420px;
+}
+
+.audit-desk-chrome-top {
+  display: none;
+}
+
+.audit-desk-zone-title .audit-desk-chrome-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-main, var(--text-main));
+}
+
+.audit-desk-zone-title .audit-desk-chrome-sub {
+  margin: 0.35rem 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.audit-desk-zone-tpl {
+  display: flex;
+  flex-direction: column;
+}
+
+body.rbi-audit-desktop-wide #header-checklist-container {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 0.1rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--rbi-radius-md);
+  background: var(--bg-main);
+  border: 1px solid var(--card-border, var(--card-border));
+  box-shadow: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+/* Компактный селектор в sticky-полоске 48px */
+body.rbi-audit-desktop-wide .audit-desk-topbar-strip #header-checklist-container {
+  min-height: 34px;
+  margin-top: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--rbi-radius-md);
+  background: color-mix(in srgb, var(--primary) 6%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--card-border));
+}
+
+body.rbi-audit-desktop-wide #header-checklist-container:hover {
+  background: var(--card-bg);
+  border-color: color-mix(in srgb, var(--primary, var(--primary)) 40%, var(--card-border));
+}
+
+body.rbi-audit-desktop-wide #header-checklist-container:focus-within {
+  background: var(--card-bg);
+  border-color: var(--primary, var(--primary));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, var(--primary)) 16%, transparent);
+}
+
+body.rbi-audit-desktop-wide .audit-desk-tpl-face {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  font-size: 14px !important;
+  font-weight: 750 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  color: var(--text-main, var(--text-main)) !important;
+  pointer-events: none;
+}
+
+body.rbi-audit-desktop-wide #header-checklist-container > #checklist-selector {
+  z-index: 10;
+}
+
+body.rbi-audit-desktop-wide .audit-desk-tpl-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+body.rbi-audit-desktop-wide .audit-desk-tpl-chev {
+  color: var(--text-muted);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+body.rbi-audit-desktop-wide #data-block-content {
+  display: grid !important;
+  /* 5 полей + кнопка «на плане» — одна строка */
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.25fr) minmax(0, 0.9fr) minmax(0, 0.75fr) minmax(0, 1fr) auto;
+  gap: 0.55rem 0.65rem;
+  align-items: end;
+  margin: 0 !important;
+  padding: 0.15rem 0 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+body.rbi-audit-desktop-wide #data-block-content .col-span-2,
+body.rbi-audit-desktop-wide #data-block-content .grid,
+body.rbi-audit-desktop-wide #data-block-content .grid.grid-cols-3,
+body.rbi-audit-desktop-wide #data-block-content > .flex.items-center.gap-2,
+body.rbi-audit-desktop-wide #data-block-content .col-span-2.flex {
+  display: contents !important;
+}
+
+body.rbi-audit-desktop-wide .audit-desk-field {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  position: relative;
+}
+
+body.rbi-audit-desktop-wide .audit-desk-field-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+body.rbi-audit-desktop-wide #data-block-content .input-base {
+  text-align: left !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  padding: 0.55rem 0.7rem !important;
+  border-radius: var(--rbi-radius-md) !important;
+  height: auto !important;
+  min-height: 40px;
+  background: var(--bg-main) !important;
+  border: 1px solid var(--card-border, var(--card-border)) !important;
+}
+
+body.rbi-audit-desktop-wide #data-block-content .input-base:focus {
+  background: var(--card-bg) !important;
+  border-color: var(--primary, var(--primary)) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, var(--primary)) 14%, transparent);
+}
+
+body.rbi-audit-desktop-wide #btn-quality-plan-pin {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  align-self: end;
+  order: 6;
+  grid-column: 6;
+  grid-row: 1;
+  min-height: 40px;
+  padding: 0.55rem 0.9rem !important;
+  border-radius: var(--rbi-radius-md) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--primary, var(--primary)) 10%, white) !important;
+  border: 1px solid color-mix(in srgb, var(--primary, var(--primary)) 28%, var(--card-border)) !important;
+  color: var(--primary-hover, var(--primary-hover)) !important;
+}
+
+body.rbi-audit-desktop-wide #data-block-content .audit-desk-field:has(#inp-contractor) { order: 1; grid-column: 1; grid-row: 1; }
+body.rbi-audit-desktop-wide #data-block-content .audit-desk-field:has(#inp-project) { order: 2; grid-column: 2; grid-row: 1; }
+body.rbi-audit-desktop-wide #data-block-content .audit-desk-field:has(#inp-section) { order: 3; grid-column: 3; grid-row: 1; }
+body.rbi-audit-desktop-wide #data-block-content .audit-desk-field:has(#inp-floor) { order: 4; grid-column: 4; grid-row: 1; }
+body.rbi-audit-desktop-wide #data-block-content .audit-desk-field:has(#inp-room) { order: 5; grid-column: 5; grid-row: 1; }
+
+body.rbi-audit-desktop-wide #quality-plan-pin-indicator {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  order: 7;
+  margin-top: 0.15rem;
+  max-width: 480px;
+}
+
+body.rbi-audit-desktop-wide #audit-group-nav {
+  margin: 0 !important;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+
+body.rbi-audit-desktop-wide #audit-group-nav:empty {
+  display: none;
+}
+
+/* ===== WORK ===== */
+.audit-desk-work,
+#audit-desktop-work {
+  display: grid;
+  grid-template-columns: var(--audit-desk-check-w, 32rem) minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+  min-width: 0;
+}
+
+#audit-desktop-check {
+  width: var(--audit-desk-check-w, 32rem);
+  max-width: 100%;
+  min-width: 0;
+}
+
+#audit-desktop-check #tab-audit {
+  max-width: none;
+  width: 100%;
+}
+
+/* Правая колонка: план (пропорция) + метрики под ним.
+   Sticky, чтобы план оставался виден, пока левая колонка (чек-лист)
+   скроллится отдельно на всю свою длину. Отступ сверху учитывает высоту
+   закреплённого .audit-desk-chrome (--audit-desk-chrome-h, JS-измерение),
+   иначе план на старте скролла заезжал бы под шапку. */
+.audit-desk-side,
+#audit-desktop-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  width: 100%;
+  position: sticky;
+  top: calc(var(--desk-topbar-h, 52px) + var(--rbi-strip-h, 48px) + var(--audit-desk-chrome-h, 0px) + 0.75rem);
+  align-self: start;
+  max-height: calc(var(--audit-desk-avail-h, 100vh) - 1.5rem);
+  overflow: auto;
+  z-index: 1;
+}
+
+body:not(.has-desk-topbar) .audit-desk-side,
+body:not(.has-desk-topbar) #audit-desktop-side {
+  top: calc(var(--rbi-strip-h, 48px) + var(--audit-desk-chrome-h, 0px) + 0.75rem);
+  max-height: calc(var(--audit-desk-avail-h, 100vh) - 1.5rem);
+}
+
+#audit-desktop-plan,
+.audit-desk-plan {
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  aspect-ratio: 4 / 3;
+  height: auto;
+  /* Тот же бюджет высоты, что у .audit-desk-side, минус запас под метрики
+     ниже плана (заголовок + подсказка + хотя бы одна строка КПИ) — иначе на
+     невысоких экранах план мог требовать больше места, чем реально остаётся
+     под sticky-шапкой, и содержимое (SVG + подпись) обрезалось. */
+  max-height: min(calc(var(--audit-desk-avail-h, 100vh) - 10rem), 820px);
+  min-height: 220px;
+  /* Внутри .audit-desk-side (flex-column, max-height + overflow:auto) при
+     нехватке места должны сжиматься метрики (у них нет критичного контента,
+     который нельзя обрезать — карточки и так доступны через скролл side), а
+     не план — иначе flex-shrink на плане проваливал его до min-height и
+     обрезал SVG-иконку/подпись даже когда формально было куда расти. */
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg, var(--card-bg));
+  border: 1px solid var(--card-border, var(--card-border));
+  border-radius: var(--rbi-radius-lg);
+  overflow: hidden;
+}
+
+.audit-desk-plan-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--card-border, var(--card-border));
+  background: var(--bg-main);
+  flex-shrink: 0;
+}
+
+.audit-desk-plan-toolbar .audit-desk-plan-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.audit-desk-plan-toolbar .audit-desk-plan-meta {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--text-muted);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* .audit-desk-btn — alias в css/rbi-ui.css (.rbi-btn) */
+
+.audit-desk-plan-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: var(--bg-main);
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.audit-desk-plan-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  text-align: center;
+  color: var(--text-muted);
+  overflow-y: auto;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 70%),
+    var(--bg-main);
+}
+
+.audit-desk-plan-art {
+  width: min(42%, 150px);
+  flex-shrink: 0;
+  opacity: 0.95;
+  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--text-main) 8%, transparent));
+}
+
+.audit-desk-plan-art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.audit-desk-plan-art-frame {
+  stroke: color-mix(in srgb, var(--primary) 45%, var(--card-border));
+  stroke-width: 2;
+  fill: color-mix(in srgb, var(--card-bg) 88%, var(--bg-main));
+}
+
+.audit-desk-plan-art-grid {
+  stroke: color-mix(in srgb, var(--card-border) 80%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.audit-desk-plan-art-room {
+  fill: color-mix(in srgb, var(--primary) 7%, var(--card-bg));
+  stroke: color-mix(in srgb, var(--primary) 28%, var(--card-border));
+  stroke-width: 1.25;
+}
+
+.audit-desk-plan-art-pin {
+  fill: color-mix(in srgb, var(--primary) 18%, transparent);
+  stroke: var(--primary);
+  stroke-width: 1.75;
+}
+
+.audit-desk-plan-art-pin-core {
+  fill: var(--primary);
+}
+
+.audit-desk-plan-empty-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 34ch;
+}
+
+.audit-desk-plan-empty-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+
+.audit-desk-plan-empty p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+  max-width: 34ch;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.audit-desk-plan-canvas-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.audit-desk-plan-canvas-wrap canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  background: var(--card-bg);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+.audit-desk-plan-pin {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid var(--card-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.audit-desk-plan-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(248, 250, 252, 0.85);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* УрК / коэффициенты под планом */
+.audit-desk-metrics,
+#audit-desktop-metrics {
+  max-width: none;
+  width: 100%;
+  background: var(--card-bg, var(--card-bg));
+  border: 1px solid var(--card-border, var(--card-border));
+  border-radius: var(--rbi-radius-lg);
+  padding: 0.75rem 0.85rem 0.85rem;
+}
+
+.audit-desk-metrics-head {
+  margin-bottom: 0.65rem;
+}
+
+.audit-desk-metrics-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.audit-desk-metrics-hint {
+  margin: 3px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+body.rbi-audit-desktop-wide #header-dashboard {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+body.rbi-audit-desktop-wide #header-dashboard > .flex.gap-2 {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  align-items: stretch;
+}
+
+/* Скрыть мобильный «раскрыватель» — коэффициенты всегда видны */
+body.rbi-audit-desktop-wide #header-dashboard [data-audit-action="toggleDashboardExpand"] {
+  display: none !important;
+}
+
+body.rbi-audit-desktop-wide #header-dashboard > .flex.gap-2 > .flex-1 {
+  background: var(--bg-main);
+  border: 1px solid var(--card-border, var(--card-border));
+  border-radius: var(--rbi-radius-md);
+  padding: 0.55rem 0.7rem !important;
+  min-width: 0;
+}
+
+body.rbi-audit-desktop-wide #dash-expanded-view {
+  display: block !important;
+  margin-top: 0.65rem !important;
+  padding: 0.65rem 0.75rem !important;
+  border: 1px solid var(--card-border, var(--card-border)) !important;
+  border-radius: var(--rbi-radius-md);
+  background: var(--bg-main);
+}
+
+body.rbi-audit-desktop-wide #dash-expanded-view .grid {
+  grid-template-columns: 1fr 1fr !important;
+  gap: 1rem !important;
+}
+
+body.rbi-audit-desktop-wide #dash-expanded-view .text-\[9px\] {
+  font-size: 11px !important;
+  line-height: 1.55;
+}
+
+@media (max-width: 1439px) {
+  body.rbi-audit-desktop-wide {
+    --audit-desk-check-w: 28rem;
+  }
+
+  /* одна строка сохраняем; чуть плотнее */
+  body.rbi-audit-desktop-wide #data-block-content {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 0.65fr) minmax(0, 0.9fr) auto;
+    gap: 0.45rem 0.5rem;
+  }
+
+  .audit-desk-chrome-top {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1600px) {
+  #audit-desktop-plan,
+  .audit-desk-plan {
+    max-height: min(calc(var(--audit-desk-avail-h, 100vh) - 10rem), 920px);
+  }
+}
+
+@media (max-width: 1279px) {
+  #audit-desktop-shell {
+    display: contents;
+  }
+}
+
+
+/* === Density tiers (≥1920 / ≥2560) ===
+   Осмотр — на всю рабочую ширину (не узкая колонка с полями по бокам). */
+@media (min-width: 1920px) {
+  #audit-desktop-shell {
+    gap: calc(0.75rem * var(--desk-gap-bump));
+    max-width: none;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: calc(0.5rem * var(--desk-gap-bump));
+    padding-right: calc(0.5rem * var(--desk-gap-bump));
+    box-sizing: border-box;
+  }
+
+  .audit-desk-chrome {
+    gap: calc(0.65rem * var(--desk-gap-bump));
+  }
+
+  .audit-desk-chrome-body {
+    gap: calc(0.65rem * var(--desk-gap-bump));
+  }
+}

@@ -1,0 +1,610 @@
+// app-shell.js — App Shell, Шаг 1 (§29, п.9): формализация существующей оболочки.
+//
+// ShellService — тонкие обёртки над уже существующими DOM-точками App Shell.
+// Не переносит логику из views.js/app-mode-utils.js/layout.utils.js/notify.utils.js —
+// только читает те же DOM-узлы / делегирует в существующие глобальные функции.
+
+(function () {
+  'use strict';
+  if (typeof window === 'undefined') return;
+
+  var SELECTED_MODULES_KEY = 'rbi_selected_business_modules';
+  var BUSINESS_MODULES = [
+    { id: 'quality', label: 'Качество' },
+    { id: 'construction', label: 'Стройконтроль' },
+    { id: 'knowledge', label: 'База знаний' },
+    { id: 'plan-fact', label: 'План/Факт' }
+  ];
+  var PLACEHOLDER_MODULES = [
+    { id: 'safety', label: 'Безопасность' },
+    { id: 'warranty', label: 'Гарантия' },
+    { id: 'tender', label: 'Тендерный отдел' },
+    { id: 'standards', label: 'Стандарты (тех. решения)' },
+    { id: 'schedule', label: 'Сроки' },
+    { id: 'budget', label: 'Бюджет' }
+  ];
+  var pendingModuleSelection = null;
+
+  function _i18n() {
+    return window.RBI && window.RBI.services && window.RBI.services.i18n;
+  }
+
+  /** Label for module id via i18n key nav.<id> (hyphens → underscores); fallback to Russian literal. */
+  function _navLabel(id, fallback) {
+    var i18n = _i18n();
+    if (i18n && typeof i18n.t === 'function') {
+      var key = 'nav.' + String(id).replace(/-/g, '_');
+      var tr = i18n.t(key);
+      if (tr && tr !== key) return tr;
+    }
+    return fallback;
+  }
+
+  function _placeholderSuffix() {
+    var i18n = _i18n();
+    if (i18n && typeof i18n.t === 'function') {
+      var tr = i18n.t('nav.placeholder_suffix');
+      if (tr && tr !== 'nav.placeholder_suffix') return tr;
+    }
+    return ' \u2014 \u0432 \u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u043a\u0435';
+  }
+
+  function defaultBusinessModuleIds() {
+    return BUSINESS_MODULES.map(function (m) { return m.id; });
+  }
+
+  function isValidBusinessModuleId(id) {
+    return BUSINESS_MODULES.some(function (m) { return m.id === id; });
+  }
+
+  // Реальный список бизнес-модулей, разрешённых текущей роли (§29 п.10в) —
+  // читает permission.service.js, fallback на весь список BUSINESS_MODULES,
+  // если сервис недоступен (не должно происходить в норме).
+  function getRoleAllowedBusinessModuleIds() {
+    if (window.RBI && window.RBI.services && window.RBI.services.permissions &&
+      typeof window.RBI.services.permissions.getAllowedModules === 'function') {
+      return window.RBI.services.permissions.getAllowedModules();
+    }
+    return defaultBusinessModuleIds();
+  }
+
+  // Модули, которые реально способны загрузиться: enabledModules компании ∩ allowedModules роли —
+  // тот же список (availableModules), по которому app.entry решает, кого инициализировать.
+  // Показывать в рейле/меню пункт, который не загрузится, — обман пользователя.
+  // null = контекст ещё не готов → не фильтруем (существующее поведение).
+  function getAvailableBusinessModuleIds() {
+    try {
+      var uc = window.RBI && window.RBI.services && window.RBI.services.userContext;
+      if (uc && typeof uc.getUserContext === 'function') {
+        var snap = uc.getUserContext();
+        if (snap && Array.isArray(snap.availableModules)) return snap.availableModules;
+      }
+      var company = window.RBI && window.RBI.services && window.RBI.services.company;
+      if (company && typeof company.getCompany === 'function') {
+        var enabled = company.getCompany().enabledModules;
+        if (Array.isArray(enabled)) {
+          var allowed = getRoleAllowedBusinessModuleIds();
+          return enabled.filter(function (id) { return allowed.indexOf(id) !== -1; });
+        }
+      }
+    } catch (_e) { /* не фильтруем */ }
+    return null;
+  }
+
+  var ShellService = {
+    getContentRoot: function () {
+      return document.getElementById('app-content');
+    },
+    getModalsRoot: function () {
+      return document.getElementById('app-modals');
+    },
+    getHeaderEl: function () {
+      return document.getElementById('main-header');
+    },
+    getBottomNavEl: function () {
+      return document.getElementById('main-bottom-nav');
+    },
+    getNav2El: function () {
+      return document.getElementById('app-nav2');
+    },
+    showToast: function (message) {
+      if (typeof window.showToast === 'function') {
+        return window.showToast(message);
+      }
+    },
+    isOnline: function () {
+      return navigator.onLine;
+    },
+    onOnlineStatusChange: function (handler) {
+      if (typeof handler !== 'function') return;
+      window.addEventListener('online', function () { handler(true); });
+      window.addEventListener('offline', function () { handler(false); });
+    },
+    getSyncStatusEl: function () {
+      return document.getElementById('header-sync-status');
+    },
+    getUserBlockEl: function () {
+      return document.getElementById('header-user-block');
+    },
+    renderUserBlock: function (userContext) {
+      var el = this.getUserBlockEl();
+      if (el && userContext) {
+        el.textContent = userContext.name + ' \u00b7 ' + userContext.role;
+      }
+      if (window.RBI && window.RBI.shellDesktop && typeof window.RBI.shellDesktop.renderDeskUser === 'function') {
+        window.RBI.shellDesktop.renderDeskUser(userContext);
+      }
+    },
+    renderCompanyBlock: function () {
+      var header = this.getHeaderEl();
+      var el = document.getElementById('header-company-block');
+      if (!header || !el) return;
+      var company = (window.RBI.services.company && typeof window.RBI.services.company.getCompany === 'function')
+        ? window.RBI.services.company.getCompany()
+        : null;
+      if (!company) return;
+
+      var syncEl = this.getSyncStatusEl();
+      var online = this.isOnline();
+      var suffix = '';
+      if (!online) {
+        var i18nOff = _i18n();
+        if (i18nOff && typeof i18nOff.t === 'function') {
+          var offTr = i18nOff.t('shell.offline_suffix');
+          suffix = (offTr && offTr !== 'shell.offline_suffix') ? offTr : ' \u00b7 \u043e\u0444\u043b\u0430\u0439\u043d';
+        } else {
+          suffix = ' \u00b7 \u043e\u0444\u043b\u0430\u0439\u043d';
+        }
+      }
+      el.textContent = company.name + suffix;
+      if (syncEl) el.dataset.hasSyncIndicator = '1';
+    },
+    shouldShowAuthGate: function () {
+      return !localStorage.getItem('rbi_auth_gate_seen');
+    },
+    showAuthGate: function () {
+      var el = document.getElementById('auth-gate-overlay');
+      if (el) el.classList.remove('hidden');
+    },
+    hideAuthGate: function () {
+      var el = document.getElementById('auth-gate-overlay');
+      if (el) el.classList.add('hidden');
+      localStorage.setItem('rbi_auth_gate_seen', '1');
+    },
+    showPlatformEntry: function () {
+      var el = document.getElementById('platform-entry-modal');
+      if (el) el.classList.remove('hidden');
+      this.renderModuleSelection();
+    },
+    hidePlatformEntry: function () {
+      var el = document.getElementById('platform-entry-modal');
+      if (el) el.classList.add('hidden');
+    },
+    getSelectedModules: function () {
+      var raw = localStorage.getItem(SELECTED_MODULES_KEY);
+      if (!raw) return defaultBusinessModuleIds();
+      try {
+        var parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return defaultBusinessModuleIds();
+        var filtered = parsed.filter(isValidBusinessModuleId);
+        return filtered.length > 0 ? filtered : defaultBusinessModuleIds();
+      } catch (e) {
+        return defaultBusinessModuleIds();
+      }
+    },
+    setSelectedModules: function (ids) {
+      var valid = (Array.isArray(ids) ? ids : []).filter(isValidBusinessModuleId);
+      if (valid.length === 0) valid = defaultBusinessModuleIds();
+      localStorage.setItem(SELECTED_MODULES_KEY, JSON.stringify(valid));
+      this._updateModeSelectorOptions(valid);
+      return valid;
+    },
+    /**
+     * Peer-модуль knowledge только в knowledge-only наборе.
+     * Если выбраны Качество и/или Стройконтроль — БЗ экран внутри них
+     * (#/quality|construction/reference), не отдельный пункт rail/гамбургера.
+     */
+    isKnowledgePeerVisible: function (selectedIds) {
+      var selected = Array.isArray(selectedIds) ? selectedIds : this.getSelectedModules();
+      return selected.indexOf('knowledge') !== -1
+        && selected.indexOf('quality') === -1
+        && selected.indexOf('construction') === -1;
+    },
+    /**
+     * Куда вести «База знаний» как вход: peer #/knowledge или экран host-модуля.
+     * @returns {{ mode: string, path: string }}
+     */
+    resolveKnowledgeEntry: function (currentMode) {
+      var selected = this.getSelectedModules();
+      if (this.isKnowledgePeerVisible(selected)) {
+        return { mode: 'knowledge', path: '#/knowledge' };
+      }
+      var mode = currentMode || null;
+      var host = null;
+      if (mode === 'quality' && selected.indexOf('quality') !== -1) host = 'quality';
+      else if ((mode === 'construction' || mode === 'construction-v2')
+        && selected.indexOf('construction') !== -1) host = 'construction';
+      else if (selected.indexOf('quality') !== -1) host = 'quality';
+      else if (selected.indexOf('construction') !== -1) host = 'construction';
+      if (!host) return { mode: 'knowledge', path: '#/knowledge' };
+      return {
+        mode: host,
+        path: host === 'quality' ? '#/quality/reference' : '#/construction/reference'
+      };
+    },
+    // Sidebar icon-rail (App Shell, §29 п.9, вариант A) — вертикальный список иконок
+    // переключения бизнес-модуля, видим только на ПК (>=768px, см. css/style.css).
+    // Переиспользует те же данные, что renderModuleSelection(), другой рендер
+    // (иконки+подпись, не grid карточек), 0 новой бизнес-логики переключения —
+    // клик делегирует в существующую window.changeAppMode(id).
+    renderSidebar: function () {
+      var container = document.getElementById('app-sidebar');
+      if (!container) return;
+
+      var selected = this.getSelectedModules();
+      var roleAllowedIds = getRoleAllowedBusinessModuleIds();
+      var availableIds = getAvailableBusinessModuleIds();
+      var currentMode = (window.AppModeManager && window.AppModeManager.currentMode) || null;
+      var knowledgePeer = this.isKnowledgePeerVisible(selected);
+
+      var icons = {
+        quality: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>',
+        construction: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>',
+        'construction-v2': '<path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>',
+        knowledge: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>',
+        'plan-fact': '<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"></path>'
+      };
+
+      var html = '';
+      BUSINESS_MODULES.forEach(function (mod) {
+        if (availableIds && availableIds.indexOf(mod.id) === -1) return;
+        if (roleAllowedIds.indexOf(mod.id) === -1) return;
+        if (selected.indexOf(mod.id) === -1) return;
+        if (mod.id === 'knowledge' && !knowledgePeer) return;
+        var isActive = currentMode === mod.id;
+        var label = _navLabel(mod.id, mod.label);
+        html += '<button type="button" data-sidebar-module-id="' + mod.id + '"' +
+          ' onclick="window.changeAppMode(\'' + mod.id + '\')"' +
+          ' class="app-sidebar-item' + (isActive ? ' active' : '') + '" title="' + label + '">' +
+          '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">' + icons[mod.id] + '</svg>' +
+          '<span class="app-sidebar-item-label">' + label + '</span>' +
+          '</button>';
+        // Тестовый вход construction-v2 — сразу под обычным Стройконтролем
+        if (mod.id === 'construction') {
+          var v2Active = currentMode === 'construction-v2';
+          var v2Label = _navLabel('construction_v2', 'Стройконтроль в2 (тест)');
+          html += '<button type="button" data-sidebar-module-id="construction-v2"' +
+            ' onclick="window.changeAppMode(\'construction-v2\')"' +
+            ' class="app-sidebar-item' + (v2Active ? ' active' : '') + '" title="' + v2Label + '">' +
+            '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">' + icons['construction-v2'] + '</svg>' +
+            '<span class="app-sidebar-item-label">' + v2Label + '</span>' +
+            '</button>';
+        }
+      });
+      PLACEHOLDER_MODULES.forEach(function (mod) {
+        var phLabel = _navLabel(mod.id, mod.label);
+        html += '<button type="button" data-shell-action="showPlaceholderModule" data-shell-action-arg="' + mod.id + '"' +
+          ' class="app-sidebar-item app-sidebar-item--placeholder" title="' + phLabel + _placeholderSuffix() + '">' +
+          '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="12" r="9"></circle></svg>' +
+          '<span class="app-sidebar-item-label">' + phLabel + '</span>' +
+          '</button>';
+      });
+
+      // Spacer + platform Settings (chrome, not a business module)
+      var settingsActive = /^#\/settings(\/|$)/i.test(String(location.hash || ''))
+        || /^#\/quality\/settings(\/|$)/i.test(String(location.hash || ''));
+      var settingsLabel = _navLabel('settings', 'Настройки');
+      html += '<div class="app-sidebar-spacer" aria-hidden="true"></div>';
+      html += '<button type="button" data-path="#/settings" data-sidebar-settings="1"' +
+        ' class="app-sidebar-item app-sidebar-item--settings' + (settingsActive ? ' active' : '') + '"' +
+        ' title="' + settingsLabel + '">' +
+        '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">' +
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>' +
+        '<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>' +
+        '</svg>' +
+        '<span class="app-sidebar-item-label">' + settingsLabel + '</span>' +
+        '</button>';
+
+      container.innerHTML = html;
+    },
+    renderModuleSelection: function () {
+      var container = document.getElementById('platform-entry-modules');
+      if (!container) return;
+
+      var selected = pendingModuleSelection || this.getSelectedModules();
+      pendingModuleSelection = selected.slice();
+      var roleAllowedIds = getRoleAllowedBusinessModuleIds();
+
+      var html = '';
+      BUSINESS_MODULES.forEach(function (mod) {
+        if (roleAllowedIds.indexOf(mod.id) === -1) {
+          html += '<div class="p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-[11px] font-bold uppercase text-center text-slate-400 dark:text-slate-500">' +
+            _navLabel(mod.id, mod.label) + '</div>';
+          return;
+        }
+        var isActive = selected.indexOf(mod.id) !== -1;
+        html += '<button type="button" data-module-id="' + mod.id + '" onclick="window.RBI.services.shell.toggleModuleSelection(\'' + mod.id + '\')"' +
+          ' class="platform-entry-card p-3 rounded-xl border text-[11px] font-bold uppercase text-center transition-colors ' +
+          (isActive
+            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
+            : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700') +
+          '">' + _navLabel(mod.id, mod.label) + '</button>';
+      });
+      var comingSoon = (function () {
+        var i18nCs = _i18n();
+        if (i18nCs && typeof i18nCs.t === 'function') {
+          var cs = i18nCs.t('nav.coming_soon');
+          if (cs && cs !== 'nav.coming_soon') return cs;
+        }
+        return 'Скоро';
+      })();
+      PLACEHOLDER_MODULES.forEach(function (mod) {
+        html += '<div class="p-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-[10px] font-bold uppercase text-center text-slate-400 dark:text-slate-500 relative">' +
+          _navLabel(mod.id, mod.label) +
+          '<span class="block mt-1 text-[8px] font-black text-indigo-400 normal-case">' + comingSoon + '</span></div>';
+      });
+      container.innerHTML = html;
+    },
+    toggleModuleSelection: function (moduleId) {
+      if (!isValidBusinessModuleId(moduleId)) return;
+      if (getRoleAllowedBusinessModuleIds().indexOf(moduleId) === -1) return;
+      var current = pendingModuleSelection || this.getSelectedModules();
+      var idx = current.indexOf(moduleId);
+      if (idx !== -1) {
+        if (current.length <= 1) return;
+        current.splice(idx, 1);
+      } else {
+        current.push(moduleId);
+      }
+      pendingModuleSelection = current;
+      this.renderModuleSelection();
+    },
+    applyModuleSelection: function () {
+      var selection = pendingModuleSelection || this.getSelectedModules();
+      this.setSelectedModules(selection);
+      this.hidePlatformEntry();
+      this.renderSidebar();
+      this.renderMobileModuleMenu();
+    },
+    // Клик по disabled-разделу sidebar (§29 п.9, PLACEHOLDER_MODULES) — единая
+    // заглушка "модуль не разработан" (js/core/views.js#showModePlaceholder),
+    // без переключения AppModeManager.currentMode (см. rbi_showSidebarPlaceholder).
+    showPlaceholderModule: function (moduleId) {
+      if (typeof window.rbi_showSidebarPlaceholder === 'function') {
+        window.rbi_showSidebarPlaceholder(moduleId);
+      }
+    },
+    // Мобильный переключатель модулей (гамбургер, <768px) — тот же набор
+    // пунктов, что desktop #app-sidebar (renderSidebar выше), но как выпадающий
+    // список вместо icon-rail (на телефоне вертикальная панель слева не
+    // помещается). Единая точка входа взамен старых #app-mode-selector-container
+    // и кнопки "Выбрать модуль" (Platform Entry) — они скрыты на мобильных
+    // через CSS (см. style.css, @media max-width:767px).
+    renderMobileModuleMenu: function () {
+      var container = document.getElementById('mobile-module-menu');
+      if (!container) return;
+
+      var selected = this.getSelectedModules();
+      var roleAllowedIds = getRoleAllowedBusinessModuleIds();
+      var availableIds = getAvailableBusinessModuleIds();
+      var currentMode = (window.AppModeManager && window.AppModeManager.currentMode) || null;
+      var knowledgePeer = this.isKnowledgePeerVisible(selected);
+
+      var labels = {
+        quality: _navLabel('quality', 'Качество'),
+        construction: _navLabel('construction', 'Стройконтроль'),
+        knowledge: _navLabel('knowledge', 'База знаний'),
+        'plan-fact': _navLabel('plan_fact', 'План/Факт'),
+        'construction-v2': _navLabel('construction_v2', 'Стройконтроль в2 (тест)')
+      };
+      var html = '';
+
+      BUSINESS_MODULES.forEach(function (mod) {
+        if (availableIds && availableIds.indexOf(mod.id) === -1) return;
+        if (roleAllowedIds.indexOf(mod.id) === -1) return;
+        if (selected.indexOf(mod.id) === -1) return;
+        if (mod.id === 'knowledge' && !knowledgePeer) return;
+        var isActive = currentMode === mod.id;
+        html += '<button type="button" data-shell-action="selectMobileModule" data-shell-action-arg="' + mod.id + '"' +
+          ' class="w-full text-left px-3.5 py-2.5 text-[11px] font-bold uppercase flex items-center justify-between gap-2 transition-colors ' +
+          (isActive ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-700 dark:text-slate-300') + '">' +
+          '<span>' + (labels[mod.id] || _navLabel(mod.id, mod.label)) + '</span>' +
+          (isActive ? '<span class="text-[8px] font-black text-indigo-500">●</span>' : '') +
+          '</button>';
+        if (mod.id === 'construction') {
+          var v2Active = currentMode === 'construction-v2';
+          html += '<button type="button" data-shell-action="selectMobileModule" data-shell-action-arg="construction-v2"' +
+            ' class="w-full text-left px-3.5 py-2.5 text-[11px] font-bold uppercase flex items-center justify-between gap-2 transition-colors ' +
+            (v2Active ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-700 dark:text-slate-300') + '">' +
+            '<span>' + labels['construction-v2'] + '</span>' +
+            (v2Active ? '<span class="text-[8px] font-black text-indigo-500">●</span>' : '') +
+            '</button>';
+        }
+      });
+
+      html += '<div class="border-t border-[var(--card-border)] my-1"></div>';
+
+      PLACEHOLDER_MODULES.forEach(function (mod) {
+        html += '<button type="button" data-shell-action="selectMobilePlaceholderModule" data-shell-action-arg="' + mod.id + '"' +
+          ' class="w-full text-left px-3.5 py-2.5 text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 opacity-70">' +
+          _navLabel(mod.id, mod.label) + '</button>';
+      });
+
+      container.innerHTML = html;
+    },
+    toggleMobileModuleMenu: function () {
+      var menu = document.getElementById('mobile-module-menu');
+      if (!menu) return;
+      var willOpen = menu.classList.contains('hidden');
+      if (willOpen) {
+        this.renderMobileModuleMenu();
+        menu.classList.remove('hidden');
+      } else {
+        menu.classList.add('hidden');
+      }
+    },
+    closeMobileModuleMenu: function () {
+      var menu = document.getElementById('mobile-module-menu');
+      if (menu) menu.classList.add('hidden');
+    },
+    selectMobileModule: function (moduleId) {
+      this.closeMobileModuleMenu();
+      if (typeof window.changeAppMode === 'function') window.changeAppMode(moduleId);
+    },
+    selectMobilePlaceholderModule: function (moduleId) {
+      this.closeMobileModuleMenu();
+      this.showPlaceholderModule(moduleId);
+    },
+    _updateModeSelectorOptions: function (selectedIds) {
+      var select = document.getElementById('app-mode-selector');
+      var container = document.getElementById('app-mode-selector-container');
+      if (!select) return;
+
+      var labels = {
+        quality: _navLabel('quality', 'Качество'),
+        construction: _navLabel('construction', 'Стройконтроль'),
+        knowledge: _navLabel('knowledge', 'База знаний'),
+        'plan-fact': _navLabel('plan_fact', 'План/Факт'),
+        'construction-v2': _navLabel('construction_v2', 'Стройконтроль в2 (тест)')
+      };
+      var currentValue = select.value;
+      var knowledgePeer = this.isKnowledgePeerVisible(selectedIds);
+      select.innerHTML = '';
+      selectedIds.forEach(function (id) {
+        if (id === 'knowledge' && !knowledgePeer) return;
+        var opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = labels[id] || id;
+        select.appendChild(opt);
+        // Тестовый v2 — сразу под пунктом Стройконтроль
+        if (id === 'construction') {
+          var v2 = document.createElement('option');
+          v2.value = 'construction-v2';
+          v2.textContent = labels['construction-v2'];
+          select.appendChild(v2);
+        }
+      });
+
+      var optionValues = [...select.options].map(function (o) { return o.value; });
+      if (optionValues.indexOf(currentValue) !== -1) {
+        select.value = currentValue;
+      } else {
+        select.value = selectedIds[0];
+      }
+
+      if (container) {
+        // >1 с учётом тестового v2 под construction
+        container.style.display = select.options.length > 1 ? 'flex' : 'none';
+      }
+    },
+    submitAuthGateConnect: function () {
+      var self = this;
+      function copyField(gateId, targetId) {
+        var gateEl = document.getElementById(gateId);
+        var targetEl = document.getElementById(targetId);
+        if (!targetEl) {
+          targetEl = document.createElement('input');
+          targetEl.type = 'hidden';
+          targetEl.id = targetId;
+          document.body.appendChild(targetEl);
+        }
+        targetEl.value = gateEl ? gateEl.value : '';
+      }
+      copyField('gate-sync-name', 'sync-name');
+      copyField('gate-sync-code', 'sync-code');
+      copyField('gate-sync-pin', 'sync-pin');
+
+      if (typeof window.initCloudConnection !== 'function') return;
+      var btn = document.querySelector('[data-shell-action="submitAuthGateConnect"]');
+      var result = window.initCloudConnection(btn);
+      if (result && typeof result.then === 'function') {
+        result.then(function () { self.hideAuthGate(); }).catch(function () { self.hideAuthGate(); });
+      } else {
+        self.hideAuthGate();
+      }
+    },
+  };
+
+  window.RBI = window.RBI || {};
+  window.RBI.services = window.RBI.services || {};
+  window.RBI.services.shell = ShellService;
+  if (window.RBI.registry && window.RBI.registry.register) {
+    window.RBI.registry.register('core.shell', ShellService);
+  }
+
+  // Паттерн делегирования событий для инициативы «Разбор inline onclick/onchange»
+  // (см. _ai/INDEX_HTML_HANDLERS_MAP.md), namespace-per-module (data-shell-action).
+  // Действия — методы window.RBI.services.shell, кроме checkForUpdates (bare window.*).
+  // Файл сам себя инициализирует (IIFE) — биндится сразу здесь, без отдельного init(ctx).
+  function bindShellActionDelegation() {
+    if (window.__shellActionDelegationBound) return;
+    window.__shellActionDelegationBound = true;
+
+    var dispatch = function (el) {
+      var action = el.dataset.shellAction;
+      var fn = ShellService[action] || window[action];
+      if (typeof fn !== 'function') return;
+      var thisArg = ShellService[action] ? ShellService : window;
+      var arg = el.dataset.shellActionArg;
+      if (arg !== undefined) fn.call(thisArg, arg);
+      else fn.call(thisArg);
+    };
+
+    var resolveActionElement = function (target) {
+      var el = target;
+      while (el && el.nodeType === 1) {
+        if (el.dataset && el.dataset.shellAction) return el;
+        var inlineOnclick = el.getAttribute && el.getAttribute('onclick');
+        if (inlineOnclick && inlineOnclick.includes('stopPropagation')) return null;
+        el = el.parentElement;
+      }
+      return null;
+    };
+
+    document.addEventListener('click', function (e) {
+      var el = resolveActionElement(e.target);
+      if (el) dispatch(el);
+      // Закрываем мобильное меню модулей при клике вне его самого/кнопки —
+      // тот же паттерн, что для стандартных выпадающих select в проекте.
+      if (!e.target.closest('.mobile-module-menu-wrap')) {
+        ShellService.closeMobileModuleMenu();
+      }
+    }, true);
+  }
+  bindShellActionDelegation();
+  ShellService.renderSidebar();
+  ShellService.renderMobileModuleMenu();
+
+  // i18n — перерисовка chrome без reload
+  if (window.RBI && window.RBI.events && typeof window.RBI.events.on === 'function') {
+    window.RBI.events.on('i18n:localeChanged', function () {
+      ShellService.renderSidebar();
+      ShellService.renderMobileModuleMenu();
+      ShellService.renderCompanyBlock();
+      if (document.getElementById('platform-entry-modal') &&
+          !document.getElementById('platform-entry-modal').classList.contains('hidden')) {
+        ShellService.renderModuleSelection();
+      }
+      var selected = ShellService.getSelectedModules();
+      ShellService._updateModeSelectorOptions(selected);
+      var i18n = _i18n();
+      if (i18n && typeof i18n.applyDom === 'function') i18n.applyDom(document);
+      // Bottom-nav / nav2 labels come from renderBottomNav → t(), not path-map
+      if (typeof window.AppModeManager !== 'undefined' &&
+          window.AppModeManager &&
+          typeof window.AppModeManager.renderBottomNav === 'function') {
+        window.AppModeManager.renderBottomNav();
+      }
+      if (window.RBI && window.RBI.shellDesktop &&
+          typeof window.RBI.shellDesktop.setModeChip === 'function') {
+        var mode = (window.AppModeManager && window.AppModeManager.currentMode) || 'quality';
+        window.RBI.shellDesktop.setModeChip(mode);
+      }
+      if (window.AppRouter && typeof window.AppRouter.updateNavHighlight === 'function') {
+        window.AppRouter.updateNavHighlight(location.hash || '');
+      }
+    });
+  }
+
+  console.log('[ShellService] app-shell.js loaded');
+}());

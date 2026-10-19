@@ -1,0 +1,1897 @@
+/**
+ * Desktop-only styles for Инженер (≥1280, class .rbi-engineer-desktop-wide).
+ * Active only with .rbi-engineer-desktop-wide on body/app-root.
+ */
+
+#app-root.rbi-engineer-desktop-wide {
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+body.rbi-engineer-desktop-wide.has-desk-topbar {
+  padding-top: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide.has-desk-topbar #app-root,
+body.rbi-engineer-desktop-wide.has-desk-topbar #app-root.rbi-engineer-desktop-wide {
+  padding-top: var(--desk-topbar-h) !important;
+}
+
+body.rbi-engineer-desktop-wide.has-desk-topbar #app-content {
+  padding-top: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide #tab-engineer {
+  padding-bottom: 1.25rem !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body.rbi-engineer-desktop-wide #tab-engineer > .eng-sub-section {
+  max-width: none !important;
+  width: 100% !important;
+  margin-top: 0.75rem !important;
+}
+
+/* Sticky engineer subtabs — css/rbi-ui.css
+ * Ignore leftover bg-white from legacy switch; only .active drives underline */
+body.rbi-engineer-desktop-wide #engineer-subtabs-block .sub-tab-btn.bg-white,
+body.rbi-engineer-desktop-wide #engineer-subtabs-block .sub-tab-btn.text-indigo-600 {
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  box-shadow: none !important;
+  border-bottom-color: transparent !important;
+}
+
+body.rbi-engineer-desktop-wide #engineer-subtabs-block .sub-tab-btn.active {
+  background: transparent !important;
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+body.rbi-engineer-desktop-wide #engineer-subtabs-block .sub-tab-btn .sm\:hidden {
+  display: none !important;
+}
+
+body.rbi-engineer-desktop-wide #engineer-subtabs-block .sub-tab-btn .hidden.sm\:inline {
+  display: inline !important;
+}
+
+body.rbi-engineer-desktop-wide #tab-engineer .sticky-top-panel {
+  position: relative !important;
+  top: auto !important;
+  z-index: 1 !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  background: var(--card-bg, var(--card-bg)) !important;
+  border: 1px solid var(--card-border) !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  padding: 14px 16px !important;
+  margin-bottom: 14px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ЗАДАЧИ — desktop chrome + rail + viewer
+   System:
+     - Toolstrip: actions 44px / chips 40px / selects 44px, 13px type
+     - Detail: full viewer — brief left, CTA column right, utils dock
+     - Surfaces: card-bg, hairline borders, indigo active (no gradient wash)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks.eng-desk-tasks > .sticky-top-panel {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.5rem !important;
+  min-height: 64px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks #rbi-tasks-container {
+  max-width: none !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-chrome {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  padding: 18px 20px !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  background: var(--card-bg, var(--card-bg)) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-actions {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-actions > button {
+  min-height: 48px !important;
+  padding: 14px 16px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  border-radius: var(--rbi-radius-lg) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-tools {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid var(--card-border) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-toolblock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-tool-label {
+  display: none;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-chips,
+body.rbi-engineer-desktop-wide #eng-sub-tasks #hub-filters.eng-desk-tasks-chips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-chips .hub-filter-btn,
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-chips #rbi-critical-only-btn {
+  border-radius: var(--rbi-radius-lg) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  min-height: 40px !important;
+  padding: 10px 18px !important;
+  line-height: 1.2 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-selects {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-selects > select {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  padding: 10px 14px !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  width: auto !important;
+  max-width: none !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-selects > select.col-span-2 {
+  grid-column: unset !important;
+  flex: 1 1 0 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks details.eng-desk-tasks-filters-src,
+body.rbi-engineer-desktop-wide #eng-sub-tasks details[data-task-section][hidden] {
+  display: none !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-split {
+  flex: 1 1 auto !important;
+  min-height: calc(100vh - 340px) !important;
+  margin-top: 0 !important;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tasks-rail {
+  gap: 4px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-list,
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-group > .eng-desk-task-list {
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0 6px 10px;
+  margin-left: 8px;
+  border-left: 2px solid var(--card-border);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-group.is-open > .eng-desk-task-list,
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tree-folder.is-open > .eng-desk-tree-kids > .eng-desk-task-row {
+  display: flex;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-group.is-open > .eng-desk-task-list > .eng-desk-task-row {
+  display: flex;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-row {
+  display: none;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  border-radius: var(--rbi-radius-md);
+  padding: 8px 10px;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-tree-folder.is-open > .eng-desk-tree-kids > .eng-desk-task-row {
+  display: flex;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-row:hover {
+  background: var(--bg-main);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-row.is-active {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg));
+  color: var(--primary);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-row-dot {
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--card-border);
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-row.is-critical .eng-desk-task-row-dot {
+  background: #ef4444;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-row-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-row-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-row-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-cards {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-card {
+  margin: 0 !important;
+}
+
+/* —— Task detail: vertical sections (описание → сроки → контекст → действия → управление) —— */
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-viewer.eng-desk-viewer--task {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: calc(100vh - 360px) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-head {
+  flex-shrink: 0 !important;
+  padding: 20px 28px 16px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-title {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail {
+  flex: 1 1 auto !important;
+  display: block !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: auto !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 22px 28px 32px;
+  max-width: 920px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-card {
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-lg);
+  background: var(--card-bg);
+  padding: 18px 20px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-section--brief .eng-desk-td-card {
+  background: var(--bg-main);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-section--meta .eng-desk-td-card {
+  padding: 14px 16px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-section--meta .eng-desk-td-card > .flex {
+  gap: 12px !important;
+  margin: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-section--meta .eng-desk-td-card > .flex > div {
+  flex: 1 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-card .mb-4 {
+  margin-bottom: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-card .text-\[12px\] {
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-card .text-\[11px\] {
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-card .text-\[10px\] {
+  font-size: 12px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-card .text-\[16px\] {
+  font-size: 22px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-card > .bg-\[var\(--hover-bg\)\],
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-card > .border {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-section--actions .eng-desk-td-card,
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-section--utils .eng-desk-td-card {
+  background: var(--bg-main);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  position: static !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions .eng-desk-task-cta,
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions .eng-desk-task-cta-wrap > button,
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions > button,
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions .workshop-ai-block #btn-gen-workshop {
+  min-height: 52px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 14px 18px !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions .workshop-ai-block {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions .workshop-ai-block #workshop-actions .grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions .eng-desk-task-cta-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions .eng-desk-task-cta-wrap .text-\[10px\],
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-detail-actions .eng-desk-task-cta-wrap .text-\[9px\] {
+  font-size: 12px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-utils {
+  display: grid !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-utils > button {
+  min-height: 72px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  padding: 12px 8px !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-task-utils svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-td-section--actions {
+  padding-top: 8px;
+  border-top: 1px solid var(--card-border);
+}
+
+/* Tasks / Meetings shared split */
+body.rbi-engineer-desktop-wide .eng-desk-split {
+  display: grid !important;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr) !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+  min-height: calc(100vh - 280px) !important;
+  margin-top: 8px !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-split-rail-only {
+  grid-template-columns: 1fr !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rail {
+  position: sticky;
+  top: 112px;
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-lg);
+  background: var(--card-bg);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rail-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  border-radius: var(--rbi-radius-md);
+  padding: 9px 10px;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rail-item:hover {
+  background: var(--bg-main);
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rail-item.is-active {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg));
+  color: var(--primary);
+  font-weight: 700;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rail-orange .eng-desk-rail-item.is-active {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rail-purple .eng-desk-rail-item.is-active {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rail-name {
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rail-count {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--hover-bg);
+  border-radius: var(--rbi-radius-sm);
+  padding: 2px 6px;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-tree-folder {
+  margin-bottom: 2px;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-tree-parent {
+  font-weight: 800;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-tree-kids {
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 4px 10px;
+  border-left: 2px solid var(--card-border);
+  margin: 0 0 4px 10px;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-tree-folder.is-open > .eng-desk-tree-kids {
+  display: flex;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-tree-child {
+  font-weight: 600;
+  font-size: 11px;
+  padding-left: 8px;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-viewer,
+body.rbi-engineer-desktop-wide .eng-desk-board {
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-lg);
+  background: var(--card-bg);
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-viewer-head,
+body.rbi-engineer-desktop-wide .eng-desk-board-head {
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-main);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--card-border);
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-viewer-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 14px;
+  min-height: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-viewer-body .task-card-item,
+body.rbi-engineer-desktop-wide .eng-desk-viewer-body details[data-task-group] {
+  margin-bottom: 8px;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-viewer-empty,
+body.rbi-engineer-desktop-wide .eng-desk-board-empty {
+  text-align: center;
+  padding: 48px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-tasks #rbi-tasks-container > details[data-task-section][hidden] {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ПРОФИЛЬ — единая 2-колоночная сетка (ровные вертикали) + scroll рейтинга
+   ═══════════════════════════════════════════════════════════════════════ */
+
+body.rbi-engineer-desktop-wide #game-dashboard-container.eng-desk-game-dash {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) !important;
+  gap: 14px !important;
+  max-width: none !important;
+  width: 100% !important;
+  align-items: stretch !important;
+}
+
+/* Wrappers dissolve into parent grid → columns align across rows */
+body.rbi-engineer-desktop-wide .eng-desk-prof-hero,
+body.rbi-engineer-desktop-wide .eng-desk-prof-primary,
+body.rbi-engineer-desktop-wide .eng-desk-prof-secondary {
+  display: contents !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-hero > *,
+body.rbi-engineer-desktop-wide .eng-desk-prof-primary > *,
+body.rbi-engineer-desktop-wide .eng-desk-prof-secondary > * {
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-hero > * {
+  min-height: 168px !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-tile {
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  background: var(--card-bg, var(--card-bg)) !important;
+  box-shadow: none !important;
+  min-height: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-tile-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 12px 16px 0;
+  flex-shrink: 0;
+}
+
+/* Fixed primary row height → columns stay aligned and rating list scrolls inside tile */
+body.rbi-engineer-desktop-wide .eng-desk-prof-radar-tile,
+body.rbi-engineer-desktop-wide .eng-desk-prof-rating-tile,
+body.rbi-engineer-desktop-wide .eng-desk-rating-panel.eng-desk-prof-rating-tile {
+  height: 440px !important;
+  min-height: 440px !important;
+  max-height: 440px !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-radar-tile {
+  display: flex !important;
+  flex-direction: column !important;
+  padding-bottom: 12px;
+  overflow: hidden !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-radar-inner {
+  flex: 1 1 auto;
+  display: flex !important;
+  flex-direction: column !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  min-height: 0 !important;
+  padding: 4px 12px 0 !important;
+  overflow: hidden !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-radar-host {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  position: relative !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-radar-host canvas {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-radar-inner > button {
+  margin-top: 8px !important;
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-rating-tile,
+body.rbi-engineer-desktop-wide .eng-desk-rating-panel.eng-desk-prof-rating-tile {
+  padding: 14px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-rating-tile .eng-desk-rating-title,
+body.rbi-engineer-desktop-wide .eng-desk-prof-rating-tile .eng-desk-rating-head {
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-rating-tile .eng-desk-rating-list {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-impact-tile {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 14px 16px !important;
+  min-height: 140px !important;
+  height: 100% !important;
+  max-height: none !important;
+  text-align: left !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-impact-tile > div:first-child {
+  margin-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-impact-tile > div:first-child > div:last-child {
+  opacity: 0.7;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-impact-tile > div:last-child {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-impact-tile .text-\[42px\] {
+  font-size: 22px !important;
+  margin-bottom: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-impact-tile .text-\[12px\] {
+  font-size: 11px !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-impact-tile .text-\[10px\].text-slate-500,
+body.rbi-engineer-desktop-wide .eng-desk-prof-impact-tile .mt-3.font-medium {
+  display: none !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-activity-tile {
+  padding: 14px 16px !important;
+  min-height: 140px !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-activity-tile > div {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  position: relative !important;
+  flex: 1 1 auto;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-activity-tile > div > div[style] {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 96px !important;
+  margin-top: 24px !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-badges,
+body.rbi-engineer-desktop-wide #badges-section.eng-desk-prof-badges {
+  grid-column: 1 / -1 !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  margin: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-badges > summary {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-badges > summary > span:last-child {
+  display: none !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-badges-grid {
+  display: grid !important;
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+  gap: 12px 10px !important;
+  padding: 16px 18px 20px !important;
+  background: var(--bg-main) !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-badge-cell {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  min-height: 88px !important;
+  padding: 8px 4px !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  box-sizing: border-box !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-prof-badge-cell > div.font-bold {
+  height: auto !important;
+  min-height: 2.2em !important;
+  margin-top: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1.15 !important;
+  padding: 0 2px !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-head {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: var(--hover-bg);
+  border-radius: var(--rbi-radius-md);
+  padding: 6px;
+  margin-bottom: 8px;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-list {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-md);
+  background: var(--card-bg, var(--card-bg));
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-row.is-me {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--card-bg));
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg));
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-rank {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--rbi-radius-md);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  background: var(--hover-bg);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-lvl {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-xp {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-xp span {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  min-width: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-badges {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-left: 8px;
+  border-left: 1px solid var(--card-border);
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-badge {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-badge svg {
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide .eng-desk-rating-empty {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 24px 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   IMPACT — без изменений логики
+   ═══════════════════════════════════════════════════════════════════════ */
+
+body.rbi-engineer-desktop-wide #eng-sub-impact.eng-desk-impact > .sticky-top-panel {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+body.rbi-engineer-desktop-wide #rbi-impact-dashboard {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body.rbi-engineer-desktop-wide #rbi-impact-dashboard > .grid.grid-cols-2 {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-bottom: 16px !important;
+}
+
+body.rbi-engineer-desktop-wide #rbi-impact-dashboard > div.rounded-2xl {
+  display: grid !important;
+  grid-template-columns: minmax(240px, 360px) 1fr !important;
+  align-items: stretch !important;
+  gap: 20px !important;
+  padding: 20px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   СОВЕЩАНИЯ / FMEA
+   ═══════════════════════════════════════════════════════════════════════ */
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings.eng-desk-meetings > .sticky-top-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+  padding: 18px 20px !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  background: var(--card-bg, var(--card-bg)) !important;
+  margin-bottom: 14px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings.eng-desk-meetings > .sticky-top-panel > .flex {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings.eng-desk-meetings > .sticky-top-panel h2 {
+  font-size: 15px !important;
+  letter-spacing: 0.04em !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings #meetings-view-mode-toggle {
+  display: inline-flex !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings #meetings-view-mode-toggle button {
+  min-height: 36px !important;
+  padding: 8px 14px !important;
+  font-size: 11px !important;
+  border-radius: 999px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings.eng-desk-meetings > .sticky-top-panel button[onclick*="rbi_createMeeting"] {
+  min-height: 40px !important;
+  padding: 10px 16px !important;
+  font-size: 12px !important;
+  border-radius: var(--rbi-radius-lg) !important;
+}
+
+body.rbi-engineer-desktop-wide #rbi-meeting-container.eng-desk-meet-host {
+  max-width: none !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+/* Rail rows (reuse task-row chrome) */
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-tree-folder.is-open > .eng-desk-tree-kids > .eng-desk-meet-row {
+  display: flex !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-row {
+  display: none;
+  width: 100%;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  padding: 12px 12px 12px 22px !important;
+  border: 0 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: transparent !important;
+  cursor: pointer;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-row:hover {
+  background: rgba(249, 115, 22, 0.08) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-row.is-active {
+  background: rgba(249, 115, 22, 0.14) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-row .eng-desk-task-row-dot {
+  margin-top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fb923c;
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-row .eng-desk-task-row-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-row .eng-desk-task-row-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-main);
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  word-break: break-word;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-row .eng-desk-task-row-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  line-height: 1.35;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-row-line {
+  display: block;
+  white-space: normal;
+  word-break: break-word;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-cards {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-cards.is-list {
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-card {
+  margin: 0 !important;
+  cursor: pointer;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-card .truncate,
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-card .line-clamp-2 {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+}
+
+/* Readable scale for cloned mobile cards */
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-card .text-\[12px\] {
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-card .text-\[11px\] {
+  font-size: 14px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-card .text-\[10px\] {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-card .text-\[9px\] {
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  white-space: normal !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-cards.is-list .eng-desk-meet-card {
+  min-height: 64px;
+  padding: 12px 14px !important;
+  align-items: flex-start !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-cards.is-list .eng-desk-meet-card .w-11 {
+  width: 52px !important;
+  height: 52px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-split {
+  align-items: stretch !important;
+  min-height: calc(100vh - 280px) !important;
+  height: calc(100vh - 220px) !important;
+  max-height: calc(100vh - 220px) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-viewer {
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-viewer.eng-desk-viewer--meeting {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-detail-head {
+  flex-shrink: 0 !important;
+  padding: 16px 24px 14px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-detail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--rbi-radius-md);
+  border: 1px solid var(--card-border);
+  background: var(--bg-main);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-act {
+  padding: 8px 12px;
+  border-radius: var(--rbi-radius-md);
+  border: 1px solid var(--card-border);
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-act--indigo {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--card-bg));
+  color: var(--primary-hover);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-act--edit {
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #c2410c;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-act--sky {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #fff;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-detail-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-detail-title {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-detail-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-detail,
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-preview {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  max-height: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  background: var(--hover-bg) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-preview-paper {
+  margin: 18px 24px 32px;
+  padding: 28px 32px 40px;
+  max-width: 920px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-lg);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  color: var(--text-main);
+  overflow: visible;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-detail-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 24px 32px;
+  max-width: 920px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-meetings .eng-desk-meet-detail-stack > div {
+  max-height: none !important;
+}
+
+body.rbi-engineer-desktop-wide #rbi-fmea-container.eng-desk-fmea-host {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+body.rbi-engineer-desktop-wide #rbi-fmea-container.eng-desk-fmea-host > .sticky-top-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding: 18px 20px !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--rbi-radius-lg) !important;
+  background: var(--card-bg, var(--card-bg)) !important;
+  margin-bottom: 0 !important;
+}
+
+body.rbi-engineer-desktop-wide #rbi-fmea-container.eng-desk-fmea-host #fmea-workspace.eng-desk-fmea-ws-src[hidden],
+body.rbi-engineer-desktop-wide #rbi-fmea-container.eng-desk-fmea-host > #fmea-workspace[hidden] {
+  display: none !important;
+}
+
+body.rbi-engineer-desktop-wide #rbi-fmea-container.eng-desk-fmea-host #fmea-registry-list,
+body.rbi-engineer-desktop-wide #rbi-fmea-container.eng-desk-fmea-host .eng-desk-fmea-registry {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-split {
+  align-items: stretch !important;
+  min-height: calc(100vh - 300px) !important;
+  height: calc(100vh - 240px) !important;
+  max-height: calc(100vh - 240px) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-viewer {
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-tree-folder.is-open > .eng-desk-tree-kids > .eng-desk-fmea-row {
+  display: flex !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-row {
+  display: none;
+  width: 100%;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  padding: 12px 12px 12px 22px !important;
+  border: 0 !important;
+  border-radius: var(--rbi-radius-md) !important;
+  background: transparent !important;
+  cursor: pointer;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-row:hover {
+  background: rgba(147, 51, 234, 0.08) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-row.is-active {
+  background: rgba(147, 51, 234, 0.14) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-row .eng-desk-task-row-dot {
+  margin-top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a855f7;
+  flex-shrink: 0;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-row .eng-desk-task-row-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-row .eng-desk-task-row-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-main);
+  white-space: normal;
+  overflow: visible;
+  word-break: break-word;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-row .eng-desk-task-row-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: normal;
+  line-height: 1.35;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-row-line {
+  display: block;
+  word-break: break-word;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-cards {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 14px !important;
+  justify-content: stretch !important;
+  align-content: start !important;
+  align-items: stretch !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-cards.is-list {
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-card {
+  margin: 0 !important;
+  cursor: pointer;
+  width: 100%;
+  max-width: none;
+  height: auto !important;
+  align-self: stretch !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-cards.is-list .eng-desk-fmea-card {
+  max-width: none;
+  min-height: 64px;
+  padding: 12px 14px !important;
+  align-items: flex-start !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-cards.is-list .eng-desk-fmea-card .w-11 {
+  width: 52px !important;
+  height: 52px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-card .truncate,
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-card .line-clamp-2 {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+}
+
+/* Readable scale for cloned mobile cards — same as meetings */
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-card .text-\[12px\] {
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-card .text-\[11px\] {
+  font-size: 14px !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-card .text-\[10px\] {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-card .text-\[9px\] {
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  white-space: normal !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-viewer.eng-desk-viewer--fmea {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-detail-head {
+  flex-shrink: 0 !important;
+  padding: 16px 24px 14px !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  background: var(--card-bg) !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-detail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--rbi-radius-md);
+  border: 1px solid var(--card-border);
+  background: var(--bg-main);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-act {
+  padding: 8px 12px;
+  border-radius: var(--rbi-radius-md);
+  border: 1px solid var(--card-border);
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-act--edit {
+  background: #faf5ff;
+  border-color: #d8b4fe;
+  color: #7e22ce;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-act--indigo {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--card-bg));
+  color: var(--primary-hover);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-act--green {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-detail-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-detail-title {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-detail-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-detail,
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-preview,
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-edit-host {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background: var(--bg-main) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-preview-paper {
+  margin: 18px 24px 32px;
+  padding: 22px 24px 32px;
+  max-width: 960px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-lg);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-preview-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-preview-meta span {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-preview-meta b {
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-card {
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-lg);
+  padding: 14px;
+  margin-bottom: 12px;
+  background: var(--card-bg);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-top {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hover-bg);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-main {
+  flex: 1;
+  min-width: 0;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-work {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-contr {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--text-main);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #dc2626;
+  margin-top: 2px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-rpn {
+  text-align: center;
+  padding: 6px 10px;
+  border-radius: var(--rbi-radius-md);
+  border: 1px solid;
+  height: fit-content;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-rpn-lab {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-rpn-val {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-main);
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-grid > div {
+  background: var(--bg-main);
+  border: 1px solid var(--card-border);
+  border-radius: var(--rbi-radius-md);
+  padding: 10px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-grid > div.is-fix {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-grid > div.is-prevent {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-grid span {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-grid > div.is-fix span {
+  color: #1d4ed8;
+  opacity: 0.75;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-defect-grid > div.is-prevent span {
+  color: #047857;
+  opacity: 0.75;
+}
+
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-edit-host #fmea-workspace,
+body.rbi-engineer-desktop-wide #eng-sub-fmea .eng-desk-fmea-workspace-live {
+  display: block !important;
+  margin: 16px 20px 28px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  max-width: none !important;
+}
+
+
+/* === Density tiers (≥1920 / ≥2560) === */
+@media (min-width: 1920px) {
+  body.rbi-engineer-desktop-wide .eng-desk-split {
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr) !important;
+    gap: calc(12px * var(--desk-gap-bump)) !important;
+  }
+
+  body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-split {
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr) !important;
+  }
+
+  /* Внешний viewer заполняет колонку split; кап только у тела чтения */
+  body.rbi-engineer-desktop-wide .eng-desk-viewer {
+    max-width: none;
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.rbi-engineer-desktop-wide .eng-desk-viewer-body {
+    max-width: var(--desk-read-max);
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (min-width: 2560px) {
+  body.rbi-engineer-desktop-wide .eng-desk-split {
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr) !important;
+  }
+
+  body.rbi-engineer-desktop-wide #eng-sub-tasks .eng-desk-split {
+    grid-template-columns: minmax(320px, 400px) minmax(0, 1fr) !important;
+  }
+}
