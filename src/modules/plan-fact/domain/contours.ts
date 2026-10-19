@@ -241,8 +241,28 @@ export function buildContourRows(
   });
 }
 
-/** Сколько позиций заполнено полностью — для состояния ВОР (ТЗ §7, экран «Состояние ВОР»). */
-export function contourCompletion(rows: ContourRow[]): { complete: number; incomplete: number; total: number } {
-  const complete = rows.filter((row) => !row.incomplete).length;
-  return { complete, incomplete: rows.length - complete, total: rows.length };
+/**
+ * Состояние заполнения по позициям (ТЗ §7, экран «Состояние ВОР»).
+ *
+ * Раньше здесь были только «заполнено полностью» и «не заполнено», и вторая цифра означала
+ * **частично** заполненные позиции. На экране это читалось как «данных нет»: в таблице стояли
+ * значения, а карточка писала «Не заполнено: 24». Теперь три состояния названы явно.
+ */
+export function contourCompletion(rows: ContourRow[]): {
+  total: number;
+  complete: number;
+  partial: number;
+  empty: number;
+  /** Позиции, где заполнены не все контуры (частично + пусто). */
+  incomplete: number;
+} {
+  let complete = 0;
+  let partial = 0;
+  let empty = 0;
+  for (const row of rows) {
+    if (row.filled === 0) empty += 1;
+    else if (row.incomplete) partial += 1;
+    else complete += 1;
+  }
+  return { total: rows.length, complete, partial, empty, incomplete: rows.length - complete };
 }

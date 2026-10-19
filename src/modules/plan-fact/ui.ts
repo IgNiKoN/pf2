@@ -12,6 +12,10 @@ import { planFactQueue, syncPlanFact } from './domain/cloud';
 import { buildWorExport, formatExportSummary, writeWorWorkbook } from './domain/export';
 import { listFacts } from './domain/fact';
 import { listWorRows } from './domain/store';
+import { buildContourRows, contourCompletion, listContours } from './domain/contours';
+import { listProposals } from './domain/approval';
+import { reconcileRows, reconciliationSummary } from './domain/reconcile';
+import { loadThresholds } from './domain/thresholds';
 import { mountContoursPanel } from './contoursPanel';
 import { mountWorksPanel } from './worksPanel';
 import { mountDashboardPanel } from './dashboardPanel';
@@ -142,6 +146,67 @@ function objectsHtml(objects: RbiObject[]): string {
     </div>`;
 }
 
+/**
+ * Маршрут по модулю: ВОР → Контуры → Утверждение → Сверка → Сводка.
+ *
+ * Семь равнозначных вкладок не объясняли порядок работы: человек не понимал, что за чем.
+ * Маршрут показывает, где он сейчас и что осталось, а клик ведёт в нужный раздел
+ * (утверждение и сверка живут внутри «Контуров» — там же и прокрутка к блоку).
+ */
+const ROUTE_STEPS: Array<{ key: string; title: string; tab: PlanFactTab; anchor?: string }> = [
+  { key: 'vor', title: 'ВОР', tab: 'vor' },
+  { key: 'contours', title: 'Контуры', tab: 'contours' },
+  { key: 'approval', title: 'Утверждение', tab: 'contours', anchor: 'pf-approval' },
+  { key: 'reconcile', title: 'Сверка', tab: 'contours', anchor: 'pf-reconcile' },
+  { key: 'summary', title: 'Сводка', tab: 'summary' }
+];
+
+function routeHtml(): string {
+  const steps = ROUTE_STEPS.map((step, index) => {
+    const arrow = index ? '<span class="text-rbi-caption text-muted">→</span>' : '';
+    return `${arrow}<button type="button" data-pf-route="${step.key}" data-pf-route-tab="${step.tab}"
+      ${step.anchor ? `data-pf-route-anchor="${step.anchor}"` : ''}
+      class="bg-surface border border-surface rounded-lg px-2 py-1 text-rbi-caption text-ink hover:border-brand transition-colors">
+      <span class="text-muted">${index + 1}.</span> ${escapeHtml(step.title)}
+      <span data-pf-route-value="${step.key}" class="text-muted">…</span></button>`;
+  }).join('');
+  return `<div id="pf-route" class="flex flex-wrap items-center gap-1.5 mb-3">${steps}</div>`;
+}
+
+/** Наполнить маршрут фактическими числами: дешёвые чтения по выбранному объекту. */
+async function refreshRoute(): Promise<void> {
+  const setValue = (key: string, value: string): void => {
+    const el = document.querySelector<HTMLElement>(`[data-pf-route-value="${key}"]`);
+    if (el) el.textContent = value;
+  };
+  if (!state.objectId) {
+    ['vor', 'contours', 'approval', 'reconcile'].forEach((key) => setValue(key, 'нет объекта'));
+    return;
+  }
+  try {
+    const rows = await listWorRows(state.objectId);
+    setValue('vor', rows.length ? `${rows.length} позиций` : 'нет ВОР');
+    const contours = await listContours(state.objectId);
+    const contourRows = buildContourRows(rows, contours);
+    const completion = contourCompletion(contourRows);
+    setValue(
+      'contours',
+      completion.complete > 0
+        ? `${completion.complete} из ${completion.total}`
+        : completion.partial > 0 ? `${completion.partial} частично` : 'не заполнено'
+    );
+    const proposals = await listProposals(state.objectId);
+    const pending = proposals.filter((proposal) => proposal.status === 'submitted').length;
+    setValue('approval', pending > 0 ? `ждёт решения ${pending}` : proposals.length > 0 ? 'решений нет' : 'нет предложений');
+    const rules = await loadThresholds(state.objectId);
+    const summary = reconciliationSummary(reconcileRows(contourRows, rules));
+    setValue('reconcile', summary.warnings > 0 ? `выше порога ${summary.warnings}` : 'в пределах порога');
+    setValue('summary', 'открыть');
+  } catch (_error) {
+    // Маршрут — подсказка, а не данные: его недоступность не должна ломать экран.
+  }
+}
+
 function tabsHtml(): string {
   const buttons = TABS.map((tab) => {
     const active = tab.id === state.tab;
@@ -260,6 +325,22 @@ function bind(root: HTMLElement): void {
       renderPlanFact();
     });
   }
+
+  root.querySelectorAll<HTMLButtonElement>('[data-pf-route]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const tab = button.getAttribute('data-pf-route-tab');
+      if (!tab) return;
+      const anchor = button.getAttribute('data-pf-route-anchor');
+      const target = tab as PlanFactTab;
+      state.tab = target;
+      renderPlanFact();
+      if (_sectionNavigator) _sectionNavigator(target);
+      if (anchor) {
+        // Утверждение и сверка живут внутри «Контуров»: после перерисовки прокручиваем к блоку.
+        setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+      }
+    });
+  });
 
   root.querySelectorAll<HTMLButtonElement>('[data-pf-tab]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -436,8 +517,10 @@ export function renderPlanFact(): void {
   // сводка — по всем видимым объектам сразу.
   const objectFreeSection = state.tab === 'works' || state.tab === 'summary';
   root.innerHTML = headerHtml() + objectsHtml(objects) + tabsHtml()
+    + ((objects.length || objectFreeSection) && !objectFreeSection ? routeHtml() : '')
     + (objects.length || objectFreeSection ? bodyHtml(objects) : emptyBodyHtml());
   bind(root);
+  if (objects.length && !objectFreeSection) void refreshRoute();
 
   if (state.tab === 'works') void mountWorksPanel();
   if (state.tab === 'summary') void mountDashboardPanel();

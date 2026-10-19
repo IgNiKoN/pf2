@@ -154,7 +154,7 @@ test('заполненные контуры дают точное расхожд
   assert.equal(row.incomplete, false);
 
   const completion = contourCompletion(rows);
-  assert.deepEqual(completion, { complete: 1, incomplete: 0, total: 1 });
+  assert.deepEqual(completion, { total: 1, complete: 1, partial: 0, empty: 0, incomplete: 0 });
 });
 
 test('позиция без контуров попадает в незаполненные', () => {

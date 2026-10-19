@@ -184,13 +184,42 @@ function summaryHtml(): string {
       <div class="text-rbi-caption text-muted">${escapeHtml(label)}</div>
       <div class="text-rbi-title font-bold ${tone}">${escapeHtml(value)}</div>
     </div>`;
+
+  const total = Math.max(1, completion.total);
+  const segments = [
+    { label: 'Заполнено полностью', value: completion.complete, tone: 'bg-success' },
+    { label: 'Заполнено частично', value: completion.partial, tone: 'bg-brand' },
+    { label: 'Пусто', value: completion.empty, tone: 'bg-warning' }
+  ].filter((segment) => segment.value > 0);
+
+  const bar = `
+    <div class="bg-surface border border-surface rounded-xl px-3 py-2 mb-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+        <div class="text-rbi-caption text-muted">Заполнение контуров по позициям</div>
+        <div class="text-rbi-caption text-muted">${completion.complete} из ${completion.total} — полностью</div>
+      </div>
+      <div class="flex w-full h-3 rounded-full overflow-hidden border border-surface">
+        ${segments.map((segment) => `<div class="${segment.tone} h-3"
+          style="width:${Math.round((segment.value / total) * 100)}%"
+          title="${escapeHtml(`${segment.label}: ${segment.value}`)}"></div>`).join('')
+          || '<div class="bg-surface h-3 w-full"></div>'}
+      </div>
+      <div class="flex flex-wrap gap-3 mt-1">
+        ${segments.map((segment) => `<span class="text-rbi-caption text-muted">
+          <span class="inline-block w-2 h-2 rounded-full ${segment.tone} mr-1"></span>${escapeHtml(segment.label)}: ${segment.value}
+        </span>`).join('')}
+        <span class="text-rbi-caption text-muted">контуров на позицию: ${CONTOURS.length}</span>
+      </div>
+    </div>`;
+
   return `
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
       ${card('Позиций ВОР', String(completion.total))}
-      ${card('Заполнено полностью', String(completion.complete))}
-      ${card('Не заполнено', String(completion.incomplete), completion.incomplete > 0 ? 'text-danger' : 'text-ink')}
-      ${card('Контуров на позицию', String(CONTOURS.length))}
-    </div>`;
+      ${card('Заполнено полностью', String(completion.complete), completion.complete > 0 ? 'text-success' : 'text-ink')}
+      ${card('Заполнено частично', String(completion.partial), completion.partial > 0 ? 'text-brand' : 'text-ink')}
+      ${card('Пусто', String(completion.empty), completion.empty > 0 ? 'text-warning' : 'text-ink')}
+    </div>
+    ${bar}`;
 }
 
 function cellHtml(row: ContourRow, kind: ContourKind): string {
@@ -251,8 +280,14 @@ function tableHtml(): string {
         <td class="py-1 pr-3 text-rbi-caption text-ink">${plan}</td>
         ${values}
         <td class="py-1 pr-3 text-rbi-caption">${diff}</td>
-        <td class="py-1 text-rbi-caption ${row.incomplete ? 'text-danger' : 'text-muted'}">
-          ${row.incomplete ? `${row.filled} из ${CONTOURS.length}` : 'заполнено'}</td>
+        <td class="py-1 text-rbi-caption ${row.filled === 0 ? 'text-muted' : row.incomplete ? 'text-brand' : 'text-success'}">
+          <div class="flex items-center gap-1.5">
+            <span class="flex gap-0.5">${CONTOURS.map((contour) => `<span
+              class="inline-block w-2.5 h-2.5 rounded-sm ${row.values[contour.kind] !== null ? 'bg-brand' : 'bg-border-surface'}"
+              title="${escapeHtml(`${contour.short}: ${row.values[contour.kind] !== null ? 'заполнено' : 'пусто'}`)}"></span>`).join('')}</span>
+            <span class="whitespace-nowrap">${row.filled} из ${CONTOURS.length}</span>
+          </div>
+        </td>
       </tr>`;
   }).join('');
 
@@ -787,8 +822,8 @@ function render(): void {
     ${state.note ? `<div class="text-rbi-caption text-brand mb-3">${escapeHtml(state.note)}</div>` : ''}
     ${state.error ? `<div class="text-rbi-body text-danger mb-3">${escapeHtml(state.error)}</div>` : ''}
     ${summaryHtml()}
-    ${reconcileHtml()}
-    ${approvalHtml()}
+    <div id="pf-reconcile">${reconcileHtml()}</div>
+    <div id="pf-approval">${approvalHtml()}</div>
     ${tableHtml()}
   `;
   bind();

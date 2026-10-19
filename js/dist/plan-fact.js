@@ -323,8 +323,15 @@ function buildContourRows(worRows, contours) {
   });
 }
 function contourCompletion(rows) {
-  const complete = rows.filter((row) => !row.incomplete).length;
-  return { complete, incomplete: rows.length - complete, total: rows.length };
+  let complete = 0;
+  let partial = 0;
+  let empty = 0;
+  for (const row of rows) {
+    if (row.filled === 0) empty += 1;
+    else if (row.incomplete) partial += 1;
+    else complete += 1;
+  }
+  return { total: rows.length, complete, partial, empty, incomplete: rows.length - complete };
 }
 const PLAN_FACT_PROPOSALS_STORE = "PLAN_FACT_PROPOSALS";
 const PLAN_FACT_PROPOSAL_ROWS_STORE = "PLAN_FACT_PROPOSAL_ROWS";
@@ -2919,13 +2926,38 @@ function summaryHtml$1() {
       <div class="text-rbi-caption text-muted">${escapeHtml$6(label)}</div>
       <div class="text-rbi-title font-bold ${tone}">${escapeHtml$6(value)}</div>
     </div>`;
+  const total = Math.max(1, completion.total);
+  const segments = [
+    { label: "Заполнено полностью", value: completion.complete, tone: "bg-success" },
+    { label: "Заполнено частично", value: completion.partial, tone: "bg-brand" },
+    { label: "Пусто", value: completion.empty, tone: "bg-warning" }
+  ].filter((segment) => segment.value > 0);
+  const bar2 = `
+    <div class="bg-surface border border-surface rounded-xl px-3 py-2 mb-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+        <div class="text-rbi-caption text-muted">Заполнение контуров по позициям</div>
+        <div class="text-rbi-caption text-muted">${completion.complete} из ${completion.total} — полностью</div>
+      </div>
+      <div class="flex w-full h-3 rounded-full overflow-hidden border border-surface">
+        ${segments.map((segment) => `<div class="${segment.tone} h-3"
+          style="width:${Math.round(segment.value / total * 100)}%"
+          title="${escapeHtml$6(`${segment.label}: ${segment.value}`)}"></div>`).join("") || '<div class="bg-surface h-3 w-full"></div>'}
+      </div>
+      <div class="flex flex-wrap gap-3 mt-1">
+        ${segments.map((segment) => `<span class="text-rbi-caption text-muted">
+          <span class="inline-block w-2 h-2 rounded-full ${segment.tone} mr-1"></span>${escapeHtml$6(segment.label)}: ${segment.value}
+        </span>`).join("")}
+        <span class="text-rbi-caption text-muted">контуров на позицию: ${CONTOURS.length}</span>
+      </div>
+    </div>`;
   return `
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
       ${card("Позиций ВОР", String(completion.total))}
-      ${card("Заполнено полностью", String(completion.complete))}
-      ${card("Не заполнено", String(completion.incomplete), completion.incomplete > 0 ? "text-danger" : "text-ink")}
-      ${card("Контуров на позицию", String(CONTOURS.length))}
-    </div>`;
+      ${card("Заполнено полностью", String(completion.complete), completion.complete > 0 ? "text-success" : "text-ink")}
+      ${card("Заполнено частично", String(completion.partial), completion.partial > 0 ? "text-brand" : "text-ink")}
+      ${card("Пусто", String(completion.empty), completion.empty > 0 ? "text-warning" : "text-ink")}
+    </div>
+    ${bar2}`;
 }
 function cellHtml(row, kind) {
   var _a, _b;
@@ -2973,8 +3005,14 @@ function tableHtml$2() {
         <td class="py-1 pr-3 text-rbi-caption text-ink">${plan}</td>
         ${values}
         <td class="py-1 pr-3 text-rbi-caption">${diff}</td>
-        <td class="py-1 text-rbi-caption ${row.incomplete ? "text-danger" : "text-muted"}">
-          ${row.incomplete ? `${row.filled} из ${CONTOURS.length}` : "заполнено"}</td>
+        <td class="py-1 text-rbi-caption ${row.filled === 0 ? "text-muted" : row.incomplete ? "text-brand" : "text-success"}">
+          <div class="flex items-center gap-1.5">
+            <span class="flex gap-0.5">${CONTOURS.map((contour) => `<span
+              class="inline-block w-2.5 h-2.5 rounded-sm ${row.values[contour.kind] !== null ? "bg-brand" : "bg-border-surface"}"
+              title="${escapeHtml$6(`${contour.short}: ${row.values[contour.kind] !== null ? "заполнено" : "пусто"}`)}"></span>`).join("")}</span>
+            <span class="whitespace-nowrap">${row.filled} из ${CONTOURS.length}</span>
+          </div>
+        </td>
       </tr>`;
   }).join("");
   const more = state$6.rows.length > 300 ? `<div class="text-rbi-caption text-muted mt-2">Показаны первые 300 позиций из ${state$6.rows.length}
@@ -3435,8 +3473,8 @@ function render$4() {
     ${state$6.note ? `<div class="text-rbi-caption text-brand mb-3">${escapeHtml$6(state$6.note)}</div>` : ""}
     ${state$6.error ? `<div class="text-rbi-body text-danger mb-3">${escapeHtml$6(state$6.error)}</div>` : ""}
     ${summaryHtml$1()}
-    ${reconcileHtml()}
-    ${approvalHtml()}
+    <div id="pf-reconcile">${reconcileHtml()}</div>
+    <div id="pf-approval">${approvalHtml()}</div>
     ${tableHtml$2()}
   `;
   bind$5();
@@ -4520,10 +4558,15 @@ async function seedDemo(objectName = "Демо-объект: ЖК Северны
   for (const [index2, row] of rows.entries()) {
     const plan = Number(row.quantity);
     const round = (value) => Math.round(value * 100) / 100;
+    const state2 = index2 % 5;
+    if (state2 === 0) continue;
     await putContour(row, "CONTRACT", plan);
-    await putContour(row, "PROPOSED", round(plan * (index2 % 5 === 0 ? 1.15 : 1.03)));
-    if (index2 % 3 === 0) await putContour(row, "RD", round(plan * 1.12));
-    if (index2 % 4 === 0) await putContour(row, "CUSTOMER_ACCEPTED", round(plan * 0.95));
+    await putContour(row, "PROPOSED", round(plan * (state2 === 1 ? 1.15 : 1.03)));
+    if (state2 >= 2) await putContour(row, "RD", round(plan * 1.12));
+    if (state2 >= 3) {
+      await putContour(row, "APPROVED", plan);
+      await putContour(row, "CUSTOMER_ACCEPTED", round(plan * 0.95));
+    }
   }
   const proposalStore = storeName$1("PLAN_FACT_PROPOSALS");
   const proposalRowStore = storeName$1("PLAN_FACT_PROPOSAL_ROWS");
@@ -7587,6 +7630,53 @@ function objectsHtml(objects) {
       <span class="text-rbi-caption text-muted">${escapeHtml(scopeLabel())} · всего: ${objects.length}</span>
     </div>`;
 }
+const ROUTE_STEPS = [
+  { key: "vor", title: "ВОР", tab: "vor" },
+  { key: "contours", title: "Контуры", tab: "contours" },
+  { key: "approval", title: "Утверждение", tab: "contours", anchor: "pf-approval" },
+  { key: "reconcile", title: "Сверка", tab: "contours", anchor: "pf-reconcile" },
+  { key: "summary", title: "Сводка", tab: "summary" }
+];
+function routeHtml() {
+  const steps = ROUTE_STEPS.map((step, index2) => {
+    const arrow = index2 ? '<span class="text-rbi-caption text-muted">→</span>' : "";
+    return `${arrow}<button type="button" data-pf-route="${step.key}" data-pf-route-tab="${step.tab}"
+      ${step.anchor ? `data-pf-route-anchor="${step.anchor}"` : ""}
+      class="bg-surface border border-surface rounded-lg px-2 py-1 text-rbi-caption text-ink hover:border-brand transition-colors">
+      <span class="text-muted">${index2 + 1}.</span> ${escapeHtml(step.title)}
+      <span data-pf-route-value="${step.key}" class="text-muted">…</span></button>`;
+  }).join("");
+  return `<div id="pf-route" class="flex flex-wrap items-center gap-1.5 mb-3">${steps}</div>`;
+}
+async function refreshRoute() {
+  const setValue = (key, value) => {
+    const el = document.querySelector(`[data-pf-route-value="${key}"]`);
+    if (el) el.textContent = value;
+  };
+  if (!state.objectId) {
+    ["vor", "contours", "approval", "reconcile"].forEach((key) => setValue(key, "нет объекта"));
+    return;
+  }
+  try {
+    const rows = await listWorRows(state.objectId);
+    setValue("vor", rows.length ? `${rows.length} позиций` : "нет ВОР");
+    const contours = await listContours(state.objectId);
+    const contourRows = buildContourRows(rows, contours);
+    const completion = contourCompletion(contourRows);
+    setValue(
+      "contours",
+      completion.complete > 0 ? `${completion.complete} из ${completion.total}` : completion.partial > 0 ? `${completion.partial} частично` : "не заполнено"
+    );
+    const proposals = await listProposals(state.objectId);
+    const pending = proposals.filter((proposal) => proposal.status === "submitted").length;
+    setValue("approval", pending > 0 ? `ждёт решения ${pending}` : proposals.length > 0 ? "решений нет" : "нет предложений");
+    const rules = await loadThresholds(state.objectId);
+    const summary = reconciliationSummary(reconcileRows(contourRows, rules));
+    setValue("reconcile", summary.warnings > 0 ? `выше порога ${summary.warnings}` : "в пределах порога");
+    setValue("summary", "открыть");
+  } catch (_error) {
+  }
+}
 function tabsHtml() {
   const buttons = TABS.map((tab) => {
     const active = tab.id === state.tab;
@@ -7688,6 +7778,23 @@ function bind(root2) {
       renderPlanFact();
     });
   }
+  root2.querySelectorAll("[data-pf-route]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const tab = button.getAttribute("data-pf-route-tab");
+      if (!tab) return;
+      const anchor = button.getAttribute("data-pf-route-anchor");
+      const target = tab;
+      state.tab = target;
+      renderPlanFact();
+      if (_sectionNavigator) _sectionNavigator(target);
+      if (anchor) {
+        setTimeout(() => {
+          var _a;
+          return (_a = document.getElementById(anchor)) == null ? void 0 : _a.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 120);
+      }
+    });
+  });
   root2.querySelectorAll("[data-pf-tab]").forEach((button) => {
     button.addEventListener("click", () => {
       const tab = button.getAttribute("data-pf-tab");
@@ -7815,8 +7922,9 @@ function renderPlanFact() {
   if (state.objectId && !objects.some((item) => item.id === state.objectId)) state.objectId = "";
   if (!state.objectId && objects.length) state.objectId = objects[0].id;
   const objectFreeSection = state.tab === "works" || state.tab === "summary";
-  root2.innerHTML = headerHtml() + objectsHtml(objects) + tabsHtml() + (objects.length || objectFreeSection ? bodyHtml(objects) : emptyBodyHtml());
+  root2.innerHTML = headerHtml() + objectsHtml(objects) + tabsHtml() + ((objects.length || objectFreeSection) && !objectFreeSection ? routeHtml() : "") + (objects.length || objectFreeSection ? bodyHtml(objects) : emptyBodyHtml());
   bind(root2);
+  if (objects.length && !objectFreeSection) void refreshRoute();
   if (state.tab === "works") void mountWorksPanel();
   if (state.tab === "summary") void mountDashboardPanel();
   if (!objects.length) return;

@@ -164,13 +164,20 @@ export async function seedDemo(objectName = 'Демо-объект: ЖК Сев�
       syncStatus: 'pending'
     });
   };
+  // Три состояния видны сразу: у части позиций заполнены все пять контуров, у части — два-три,
+  // у нескольких — ни одного. Иначе демо показывает однообразную картинку и «Пусто: 0».
   for (const [index, row] of rows.entries()) {
     const plan = Number(row.quantity);
     const round = (value: number): number => Math.round(value * 100) / 100;
+    const state = index % 5; // 0 - пусто, 1-2 - частично, 3-4 - полностью
+    if (state === 0) continue;
     await putContour(row, 'CONTRACT', plan);
-    await putContour(row, 'PROPOSED', round(plan * (index % 5 === 0 ? 1.15 : 1.03)));
-    if (index % 3 === 0) await putContour(row, 'RD', round(plan * 1.12));
-    if (index % 4 === 0) await putContour(row, 'CUSTOMER_ACCEPTED', round(plan * 0.95));
+    await putContour(row, 'PROPOSED', round(plan * (state === 1 ? 1.15 : 1.03)));
+    if (state >= 2) await putContour(row, 'RD', round(plan * 1.12));
+    if (state >= 3) {
+      await putContour(row, 'APPROVED', plan);
+      await putContour(row, 'CUSTOMER_ACCEPTED', round(plan * 0.95));
+    }
   }
 
   // Предложение на утверждении — чтобы раздел «Утверждение» не выглядел пустым.
