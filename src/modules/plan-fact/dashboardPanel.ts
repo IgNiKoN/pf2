@@ -587,7 +587,17 @@ async function runSeedDemo(): Promise<void> {
     state.error = error instanceof Error ? error.message : String(error);
   }
   state.seeding = false;
+  // После появления объекта перерисовываем модуль целиком: иначе шапка продолжает писать
+  // «Объекты недоступны», хотя объект уже создан и виден в сводке.
+  const module = (window as unknown as { PlanFactModule?: { showTab?: () => void } }).PlanFactModule;
+  try {
+    module?.showTab?.();
+  } catch (_error) { /* шапка не критична: сводку отрисуем ниже */ }
+  await new Promise((resolve) => setTimeout(resolve, 300));
   await mountDashboardPanel();
+  const note = state.note;
+  state.note = note;
+  render();
 }
 
 function bind(): void {

@@ -4994,6 +4994,7 @@ function render$2() {
   bind$3();
 }
 async function runSeedDemo() {
+  var _a;
   if (state$4.seeding) return;
   state$4.seeding = true;
   state$4.error = "";
@@ -5006,7 +5007,16 @@ async function runSeedDemo() {
     state$4.error = error instanceof Error ? error.message : String(error);
   }
   state$4.seeding = false;
+  const module = window.PlanFactModule;
+  try {
+    (_a = module == null ? void 0 : module.showTab) == null ? void 0 : _a.call(module);
+  } catch (_error) {
+  }
+  await new Promise((resolve) => setTimeout(resolve, 300));
   await mountDashboardPanel();
+  const note = state$4.note;
+  state$4.note = note;
+  render$2();
 }
 function bind$3() {
   var _a, _b;
