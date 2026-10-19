@@ -13,7 +13,9 @@
   // Fallback-список на случай, если company.service.js по какой-то причине
   // не загружен (порядок скриптов нарушен) — не единственный источник истины,
   // основной источник — CompanyService.getCompany().enabledModules.
-  var FALLBACK_AVAILABLE_MODULES = ['quality', 'sk', 'settings', 'knowledge', 'construction', 'game', 'ai'];
+  // plan-fact — такой же бизнес-модуль платформы, поэтому он есть и в запасном наборе:
+  // иначе до первой настройки компании модуль не виден ни одной роли.
+  var FALLBACK_AVAILABLE_MODULES = ['quality', 'sk', 'settings', 'knowledge', 'construction', 'plan-fact', 'game', 'ai'];
 
   var UserContextService = {
     getUserContext: function () {

@@ -3239,6 +3239,8 @@
   "settings.platform.modules.knowledge": "Baza znanja",
   "settings.platform.modules.knowledge_hint": "Zajednički peer-modul (kontrolne liste, ND, TWI, čvorovi). Obavezan uz Kvalitet i Građevinsku kontrolu; može ostati sam (knowledge-only).",
   "settings.platform.modules.knowledge_locked": "Obavezna zajedno sa Kvalitetom ili Građevinskom kontrolom",
+  "settings.platform.modules.plan_fact": "Plan/Fakt (građevinski radovi)",
+  "settings.platform.modules.plan_fact_hint": "Planiranje i stvarno stanje radova: uvoz formi kupca, konture obima, odobravanje PTO → RP, dinamika, stvarno stanje od šefa gradilišta, sravnjenje i pregled za rukovodioca. Vidljivost po ulozi se podešava u „Uloge i prava“.",
   "settings.platform.modules.quality": "Kvalitet",
   "settings.platform.modules.quality_hint": "Modul kvaliteta: pregled, istorija, analitika, zadaci i povezane kartice. Feature-of (SK, igra, AI) idu sa roditeljem. Povlači zajedničku Bazu znanja.",
   "settings.platform.modules.reload": "Osveži stranicu",

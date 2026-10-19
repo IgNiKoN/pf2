@@ -3239,6 +3239,8 @@
   "settings.platform.modules.knowledge": "База знаний",
   "settings.platform.modules.knowledge_hint": "Сквозной peer-модуль (Ч/л, НД, TWI, узлы). Обязателен с Качеством и Стройконтролем; можно оставить один (knowledge-only).",
   "settings.platform.modules.knowledge_locked": "Обязательна вместе с Качеством или Стройконтролем",
+  "settings.platform.modules.plan_fact": "План/Факт СМР",
+  "settings.platform.modules.plan_fact_hint": "Планирование и факт СМР: разбор форм заказчика, контуры объёмов, утверждение ПТО → РП, график, факт прораба, сверка и сводка для руководителя. Видимость внутри роли настраивается в «Ролях и правах».",
   "settings.platform.modules.quality": "Качество",
   "settings.platform.modules.quality_hint": "Модуль качества: осмотр, история, аналитика, задачи и связанные вкладки. Feature-of (СК, игра, AI) едут бандлами родителя. Тянет сквозную Базу знаний.",
   "settings.platform.modules.reload": "Обновить страницу",

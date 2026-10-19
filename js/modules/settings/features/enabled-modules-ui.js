@@ -45,6 +45,13 @@ const MODULE_OPTIONS = [
         hintKey: 'settings.platform.modules.knowledge_hint',
         labelFb: 'База знаний',
         hintFb: 'Сквозной peer-модуль (Ч/л, НД, TWI, узлы). Обязателен с Качеством и Стройконтролем; можно оставить один (knowledge-only).'
+    },
+    {
+        id: 'plan-fact',
+        labelKey: 'settings.platform.modules.plan_fact',
+        hintKey: 'settings.platform.modules.plan_fact_hint',
+        labelFb: 'План/Факт СМР',
+        hintFb: 'Планирование и факт СМР: разбор форм заказчика, контуры объёмов, утверждение ПТО → РП, график, факт прораба, сверка и сводка для руководителя. Видимость внутри роли настраивается в «Ролях и правах».'
     }
 ];
 

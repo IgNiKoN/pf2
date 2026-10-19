@@ -3239,6 +3239,8 @@
   "settings.platform.modules.knowledge": "Knowledge base",
   "settings.platform.modules.knowledge_hint": "Shared peer module (checklists, ND, TWI, nodes). Required with Quality and Construction Control; can stay alone (knowledge-only).",
   "settings.platform.modules.knowledge_locked": "Required together with Quality or Construction Control",
+  "settings.platform.modules.plan_fact": "Plan/Fact (construction works)",
+  "settings.platform.modules.plan_fact_hint": "Planning and actuals for construction works: customer form import, volume contours, PTO -> PM approval, schedule, foreman actuals, reconciliation and manager dashboard. Role-level visibility is configured in Roles and permissions.",
   "settings.platform.modules.quality": "Quality",
   "settings.platform.modules.quality_hint": "Quality module: inspection, history, analytics, tasks and related tabs. Feature-of (SK, game, AI) ship with the parent. Pulls shared Knowledge Base.",
   "settings.platform.modules.reload": "Reload page",
