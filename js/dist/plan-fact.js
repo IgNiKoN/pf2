@@ -145,13 +145,13 @@ function decimalToNumber(value) {
 const PLAN_FACT_CALENDAR_STORE = "PLAN_FACT_CALENDAR";
 const CALENDAR_RECORD_ID = "company";
 const DATE_RE$1 = /^\d{4}-\d{2}-\d{2}$/;
-function services$7() {
+function services$8() {
   const rbi = window.RBI;
   return rbi && rbi.services || {};
 }
-function storeName$9() {
+function storeName$a() {
   var _a, _b;
-  const stores = (_b = (_a = services$7().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a);
+  const stores = (_b = (_a = services$8().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a);
   const name = stores == null ? void 0 : stores.PLAN_FACT_CALENDAR;
   if (!name) throw new Error("Сторадж PLAN_FACT_CALENDAR не объявлен — обновите страницу, чтобы применилась миграция");
   return name;
@@ -169,10 +169,10 @@ function emptyCalendar() {
   return { id: CALENDAR_RECORD_ID, workWeek: 5, nonWorkingDays: [], updatedAt: "", updatedBy: "" };
 }
 async function loadCalendar() {
-  const storage2 = services$7().storage;
+  const storage2 = services$8().storage;
   if (!storage2 || typeof storage2.get !== "function") return emptyCalendar();
   try {
-    const raw = await storage2.get(storeName$9(), CALENDAR_RECORD_ID);
+    const raw = await storage2.get(storeName$a(), CALENDAR_RECORD_ID);
     if (!raw) return emptyCalendar();
     return {
       id: CALENDAR_RECORD_ID,
@@ -186,7 +186,7 @@ async function loadCalendar() {
   }
 }
 async function saveCalendar(workWeek, nonWorkingDays) {
-  const permissions = services$7().permissions;
+  const permissions = services$8().permissions;
   const actor = permissions && typeof permissions.getCurrentEngineerName === "function" ? String(permissions.getCurrentEngineerName() || "") : "";
   const record = {
     id: CALENDAR_RECORD_ID,
@@ -196,8 +196,8 @@ async function saveCalendar(workWeek, nonWorkingDays) {
     updatedBy: actor,
     syncStatus: "pending"
   };
-  const storage2 = services$7().storage;
-  if (storage2 && typeof storage2.put === "function") await storage2.put(storeName$9(), record);
+  const storage2 = services$8().storage;
+  if (storage2 && typeof storage2.put === "function") await storage2.put(storeName$a(), record);
   return record;
 }
 const PLAN_FACT_QUANTITIES_STORE = "PLAN_FACT_QUANTITIES";
@@ -208,35 +208,35 @@ const CONTOURS = [
   { kind: "APPROVED", label: "Утверждено РП", short: "Утверждено", hint: "Утверждённый производственный объём (после baseline неизменяем)" },
   { kind: "CUSTOMER_ACCEPTED", label: "Принято заказчиком", short: "Принято", hint: "Объём из подписанного акта; вводится вручную по документу" }
 ];
-function services$6() {
+function services$7() {
   const rbi = window.RBI;
   return rbi && rbi.services || {};
 }
-function storeName$8() {
+function storeName$9() {
   var _a, _b, _c;
-  const name = (_c = (_b = (_a = services$6().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a)) == null ? void 0 : _c.PLAN_FACT_QUANTITIES;
+  const name = (_c = (_b = (_a = services$7().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a)) == null ? void 0 : _c.PLAN_FACT_QUANTITIES;
   if (!name) throw new Error("Сторадж PLAN_FACT_QUANTITIES не объявлен — обновите страницу, чтобы применилась миграция");
   return name;
 }
 function newId$4() {
   var _a;
-  const generator = (_a = services$6().storage) == null ? void 0 : _a.generateId;
+  const generator = (_a = services$7().storage) == null ? void 0 : _a.generateId;
   return typeof generator === "function" ? generator("pfqty") : `pfqty_${Date.now().toString(36)}`;
 }
 function canManageContours() {
-  const permissions = services$6().permissions;
+  const permissions = services$7().permissions;
   return !!(permissions && typeof permissions.canManageContours === "function" && permissions.canManageContours());
 }
 async function listContours(objectId) {
   var _a, _b;
-  const all2 = await ((_b = (_a = services$6().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$8())) ?? [];
+  const all2 = await ((_b = (_a = services$7().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$9())) ?? [];
   return all2.filter((record) => record.objectId === objectId && !record.isDeleted);
 }
 async function setContour(input) {
   if (!canManageContours()) {
     return { ok: false, error: "Объёмы по контурам ведёт ПТО: у вашей роли нет этого права" };
   }
-  const storage2 = services$6().storage;
+  const storage2 = services$7().storage;
   if (!(storage2 == null ? void 0 : storage2.getAll) || !(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   const raw = String(input.quantity ?? "").trim();
   if (raw === "") {
@@ -248,9 +248,9 @@ async function setContour(input) {
   if (quantity.startsWith("-")) {
     return { ok: false, error: "Отрицательный объём допустим только как отдельная корректировка, а не запись в контур" };
   }
-  const permissions = services$6().permissions;
+  const permissions = services$7().permissions;
   const actor = permissions && typeof permissions.getCurrentEngineerName === "function" ? String(permissions.getCurrentEngineerName() || "") : "";
-  const existing = await storage2.getAll(storeName$8());
+  const existing = await storage2.getAll(storeName$9());
   const current = existing.find((record2) => record2.worItemId === input.worItemId && record2.kind === input.kind && !record2.isDeleted) ?? null;
   const record = {
     id: (current == null ? void 0 : current.id) ?? newId$4(),
@@ -265,19 +265,19 @@ async function setContour(input) {
     updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
     syncStatus: "pending"
   };
-  await storage2.put(storeName$8(), record);
+  await storage2.put(storeName$9(), record);
   return { ok: true, record };
 }
 async function clearContour(worItemId, kind) {
   if (!canManageContours()) {
     return { ok: false, error: "Объёмы по контурам ведёт ПТО: у вашей роли нет этого права" };
   }
-  const storage2 = services$6().storage;
+  const storage2 = services$7().storage;
   if (!(storage2 == null ? void 0 : storage2.getAll) || !(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
-  const all2 = await storage2.getAll(storeName$8());
+  const all2 = await storage2.getAll(storeName$9());
   const current = all2.find((record) => record.worItemId === worItemId && record.kind === kind && !record.isDeleted);
   if (!current) return { ok: true };
-  await storage2.put(storeName$8(), {
+  await storage2.put(storeName$9(), {
     ...current,
     isDeleted: true,
     updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
@@ -331,39 +331,39 @@ const PLAN_FACT_PROPOSAL_ROWS_STORE = "PLAN_FACT_PROPOSAL_ROWS";
 const PLAN_FACT_BASELINES_STORE = "PLAN_FACT_BASELINES";
 const PLAN_FACT_CHANGE_REQUESTS_STORE = "PLAN_FACT_CHANGE_REQUESTS";
 const PLAN_FACT_AUDIT_STORE = "PLAN_FACT_AUDIT";
-function services$5() {
+function services$6() {
   const rbi = window.RBI;
   return rbi && rbi.services || {};
 }
-function storeName$7(key) {
+function storeName$8(key) {
   var _a, _b;
-  const name = (_b = (_a = services$5().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a)[key];
+  const name = (_b = (_a = services$6().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a)[key];
   if (!name) throw new Error(`Сторадж ${key} не объявлен — обновите страницу, чтобы применилась миграция`);
   return name;
 }
 function newId$3(prefix) {
   var _a;
-  const generator = (_a = services$5().storage) == null ? void 0 : _a.generateId;
+  const generator = (_a = services$6().storage) == null ? void 0 : _a.generateId;
   return typeof generator === "function" ? generator(prefix) : `${prefix}_${Date.now().toString(36)}`;
 }
 function author$1() {
-  const permissions = services$5().permissions;
+  const permissions = services$6().permissions;
   return permissions && typeof permissions.getCurrentEngineerName === "function" ? String(permissions.getCurrentEngineerName() || "") : "";
 }
 function canApproveContours() {
-  const permissions = services$5().permissions;
+  const permissions = services$6().permissions;
   return !!(permissions && typeof permissions.canApproveContours === "function" && permissions.canApproveContours());
 }
 function canPropose() {
-  const permissions = services$5().permissions;
+  const permissions = services$6().permissions;
   return !!(permissions && typeof permissions.canManageContours === "function" && permissions.canManageContours());
 }
 async function all(key) {
   var _a, _b;
-  return await ((_b = (_a = services$5().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$7(key))) ?? [];
+  return await ((_b = (_a = services$6().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$8(key))) ?? [];
 }
 async function writeAudit(entry) {
-  const storage2 = services$5().storage;
+  const storage2 = services$6().storage;
   if (!(storage2 == null ? void 0 : storage2.put)) return null;
   const record = {
     id: newId$3("pfaudit"),
@@ -377,7 +377,7 @@ async function writeAudit(entry) {
     createdAt: (/* @__PURE__ */ new Date()).toISOString(),
     syncStatus: "pending"
   };
-  await storage2.put(storeName$7(PLAN_FACT_AUDIT_STORE), record);
+  await storage2.put(storeName$8(PLAN_FACT_AUDIT_STORE), record);
   return record;
 }
 async function listAudit(limit = 30) {
@@ -405,7 +405,7 @@ async function listChangeRequests(objectId) {
 }
 async function proposeContours(input) {
   if (!canPropose()) return { ok: false, error: "Предложение готовит ПТО: у вашей роли нет права на правку объёмов" };
-  const storage2 = services$5().storage;
+  const storage2 = services$6().storage;
   if (!(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   const rows = input.rows.filter((row) => String(row.quantity ?? "").trim() !== "");
   if (rows.length === 0) {
@@ -432,7 +432,7 @@ async function proposeContours(input) {
     updatedAt: now,
     syncStatus: "pending"
   };
-  await storage2.put(storeName$7(PLAN_FACT_PROPOSALS_STORE), record);
+  await storage2.put(storeName$8(PLAN_FACT_PROPOSALS_STORE), record);
   for (const row of rows) {
     const rowRecord = {
       id: newId$3("pfprow"),
@@ -444,7 +444,7 @@ async function proposeContours(input) {
       updatedAt: now,
       syncStatus: "pending"
     };
-    await storage2.put(storeName$7(PLAN_FACT_PROPOSAL_ROWS_STORE), rowRecord);
+    await storage2.put(storeName$8(PLAN_FACT_PROPOSAL_ROWS_STORE), rowRecord);
   }
   await writeAudit({
     entity: "proposal",
@@ -456,7 +456,7 @@ async function proposeContours(input) {
 }
 async function decideProposal(input) {
   if (!canApproveContours()) return { ok: false, error: "Утверждает объёмы РП: у вашей роли нет этого права" };
-  const storage2 = services$5().storage;
+  const storage2 = services$6().storage;
   if (!(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   const proposal = (await listProposals()).find((record) => record.id === input.proposalId);
   if (!proposal) return { ok: false, error: "Предложение не найдено" };
@@ -470,7 +470,7 @@ async function decideProposal(input) {
   if (input.decision === "rejected" && reason === "") {
     return { ok: false, error: "Для отказа нужна причина — иначе ПТО не поймёт, что менять" };
   }
-  await storage2.put(storeName$7(PLAN_FACT_PROPOSALS_STORE), {
+  await storage2.put(storeName$8(PLAN_FACT_PROPOSALS_STORE), {
     ...proposal,
     status: input.decision,
     decidedBy: author$1(),
@@ -506,7 +506,7 @@ async function decideProposal(input) {
     createdAt: now,
     syncStatus: "pending"
   };
-  await storage2.put(storeName$7(PLAN_FACT_BASELINES_STORE), baseline);
+  await storage2.put(storeName$8(PLAN_FACT_BASELINES_STORE), baseline);
   for (const row of snapshotRows) {
     await setContour({
       worItemId: row.worItemId,
@@ -529,7 +529,7 @@ async function decideProposal(input) {
 async function requestChange(input) {
   var _a;
   if (!canPropose()) return { ok: false, error: "Изменение запрашивает ПТО: у вашей роли нет права на правку объёмов" };
-  const storage2 = services$5().storage;
+  const storage2 = services$6().storage;
   if (!(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   const reason = String(input.reason ?? "").trim();
   if (reason === "") return { ok: false, error: "Причина изменения обязательна" };
@@ -563,7 +563,7 @@ async function requestChange(input) {
     place: String(input.place ?? ""),
     syncStatus: "pending"
   };
-  await storage2.put(storeName$7(PLAN_FACT_CHANGE_REQUESTS_STORE), record);
+  await storage2.put(storeName$8(PLAN_FACT_CHANGE_REQUESTS_STORE), record);
   await writeAudit({
     entity: "change_request",
     entityId: record.id,
@@ -576,7 +576,7 @@ async function requestChange(input) {
 }
 async function decideChangeRequest(input) {
   if (!canApproveContours()) return { ok: false, error: "Утверждает изменения РП: у вашей роли нет этого права" };
-  const storage2 = services$5().storage;
+  const storage2 = services$6().storage;
   if (!(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   const record = (await listChangeRequests()).find((item) => item.id === input.id);
   if (!record) return { ok: false, error: "Запрос на изменение не найден" };
@@ -589,7 +589,7 @@ async function decideChangeRequest(input) {
     return { ok: false, error: "Для отказа нужна причина" };
   }
   if (input.decision === "rejected") {
-    await storage2.put(storeName$7(PLAN_FACT_CHANGE_REQUESTS_STORE), {
+    await storage2.put(storeName$8(PLAN_FACT_CHANGE_REQUESTS_STORE), {
       ...record,
       status: "rejected",
       decidedBy: author$1(),
@@ -637,7 +637,7 @@ async function decideChangeRequest(input) {
     createdAt: now,
     syncStatus: "pending"
   };
-  await storage2.put(storeName$7(PLAN_FACT_BASELINES_STORE), baseline);
+  await storage2.put(storeName$8(PLAN_FACT_BASELINES_STORE), baseline);
   await setContour({
     worItemId: record.worItemId,
     objectId: record.objectId,
@@ -647,7 +647,7 @@ async function decideChangeRequest(input) {
     method: "изменение утверждено РП",
     note: record.reason
   });
-  await storage2.put(storeName$7(PLAN_FACT_CHANGE_REQUESTS_STORE), {
+  await storage2.put(storeName$8(PLAN_FACT_CHANGE_REQUESTS_STORE), {
     ...record,
     status: "effective",
     decidedBy: author$1(),
@@ -837,6 +837,42 @@ function dedupeItems(items) {
   }
   return { items: [...seen.values()], duplicates };
 }
+function normalizeRows(rows, ctx) {
+  const items = [];
+  const issues = [];
+  let materialsSkipped = 0;
+  let unresolvedWorks2 = 0;
+  let unresolvedLocations = 0;
+  for (const row of rows) {
+    const result = normalizeRow(row, ctx);
+    if (result.isMaterial) materialsSkipped += 1;
+    issues.push(...result.issues);
+    unresolvedWorks2 += result.issues.filter((issue) => issue.code === "WORK_UNRESOLVED").length;
+    unresolvedLocations += result.issues.filter((issue) => issue.code === "LOCATION_UNRESOLVED").length;
+    if (result.item) items.push(result.item);
+  }
+  const deduped = dedupeItems(items);
+  for (const duplicate of deduped.duplicates) {
+    issues.push({
+      severity: "warning",
+      code: "DUPLICATE_ROW",
+      message: `Дубль позиции (${duplicate.locationPath.join("/")} · ${duplicate.workRaw}) — строка не создаёт новую позицию`,
+      fragment: duplicate.fragment
+    });
+  }
+  return {
+    layout: "unknown",
+    items: deduped.items,
+    issues,
+    stats: {
+      rowsTotal: rows.length,
+      imported: deduped.items.length,
+      unresolvedWorks: unresolvedWorks2,
+      unresolvedLocations,
+      materialsSkipped
+    }
+  };
+}
 const UNITS = [
   { code: "m2", title: "м²", aliases: ["м2", "м²", "кв.м", "кв. м", "M2", "S, м2"] },
   { code: "m3", title: "м³", aliases: ["м3", "м³", "куб.м", "S, м3"] },
@@ -977,18 +1013,18 @@ const WORK_NORMS = NORM_SEED.reduce((acc, seed) => {
 }, {});
 const PLAN_FACT_WORKS_STORE = "PLAN_FACT_WORKS";
 const PLAN_FACT_WORK_ALIASES_STORE = "PLAN_FACT_WORK_ALIASES";
-function services$4() {
+function services$5() {
   const rbi = window.RBI;
   return rbi && rbi.services || {};
 }
-function storeName$6(key) {
+function storeName$7(key) {
   var _a, _b;
-  const name = (_b = (_a = services$4().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a)[key];
+  const name = (_b = (_a = services$5().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a)[key];
   if (!name) throw new Error(`Сторадж ${key} не объявлен — обновите страницу, чтобы применилась миграция`);
   return name;
 }
 function canManageWorks() {
-  const permissions = services$4().permissions;
+  const permissions = services$5().permissions;
   return !!(permissions && typeof permissions.canManageWorks === "function" && permissions.canManageWorks());
 }
 function normalizeWorkName(raw) {
@@ -996,7 +1032,7 @@ function normalizeWorkName(raw) {
 }
 function newId$2(prefix) {
   var _a;
-  const generator = (_a = services$4().storage) == null ? void 0 : _a.generateId;
+  const generator = (_a = services$5().storage) == null ? void 0 : _a.generateId;
   return typeof generator === "function" ? generator(prefix) : `${prefix}_${Date.now().toString(36)}`;
 }
 function seedWorks() {
@@ -1017,7 +1053,7 @@ function seedWorks() {
 }
 async function listWorks() {
   var _a, _b;
-  const stored = await ((_b = (_a = services$4().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$6(PLAN_FACT_WORKS_STORE))) ?? [];
+  const stored = await ((_b = (_a = services$5().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$7(PLAN_FACT_WORKS_STORE))) ?? [];
   const byId = /* @__PURE__ */ new Map();
   for (const work of seedWorks()) byId.set(work.id, work);
   for (const record of stored) {
@@ -1032,16 +1068,16 @@ async function listWorks() {
 }
 async function listAliases() {
   var _a, _b;
-  const stored = await ((_b = (_a = services$4().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$6(PLAN_FACT_WORK_ALIASES_STORE))) ?? [];
+  const stored = await ((_b = (_a = services$5().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$7(PLAN_FACT_WORK_ALIASES_STORE))) ?? [];
   return stored.filter((alias) => alias && !alias.isDeleted);
 }
 function author() {
-  const permissions = services$4().permissions;
+  const permissions = services$5().permissions;
   return permissions && typeof permissions.getCurrentEngineerName === "function" ? String(permissions.getCurrentEngineerName() || "") : "";
 }
 async function saveWork(input) {
   if (!canManageWorks()) return { ok: false, error: "Справочник работ ведёт ПТО: у вашей роли нет этого права" };
-  const storage2 = services$4().storage;
+  const storage2 = services$5().storage;
   if (!(storage2 == null ? void 0 : storage2.getAll) || !(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   const name = String(input.name ?? "").trim();
   if (!name) return { ok: false, error: "Название вида работ обязательно" };
@@ -1066,17 +1102,17 @@ async function saveWork(input) {
     updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
     syncStatus: "pending"
   };
-  await storage2.put(storeName$6(PLAN_FACT_WORKS_STORE), record);
+  await storage2.put(storeName$7(PLAN_FACT_WORKS_STORE), record);
   return { ok: true, record };
 }
 async function archiveWork(id) {
   if (!canManageWorks()) return { ok: false, error: "Справочник работ ведёт ПТО: у вашей роли нет этого права" };
-  const storage2 = services$4().storage;
+  const storage2 = services$5().storage;
   if (!(storage2 == null ? void 0 : storage2.getAll) || !(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   const works = await listWorks();
   const current = works.find((work) => work.id === id);
   if (!current) return { ok: false, error: "Вид работ не найден" };
-  await storage2.put(storeName$6(PLAN_FACT_WORKS_STORE), {
+  await storage2.put(storeName$7(PLAN_FACT_WORKS_STORE), {
     ...current,
     isDeleted: true,
     revision: current.revision + 1,
@@ -1087,7 +1123,7 @@ async function archiveWork(id) {
 }
 async function saveAlias(aliasRaw, workId, source = "pto") {
   if (!canManageWorks()) return { ok: false, error: "Связки работ ведёт ПТО: у вашей роли нет этого права" };
-  const storage2 = services$4().storage;
+  const storage2 = services$5().storage;
   if (!(storage2 == null ? void 0 : storage2.getAll) || !(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   const alias = String(aliasRaw ?? "").trim();
   const normalizedAlias = normalizeWorkName(alias);
@@ -1107,16 +1143,16 @@ async function saveAlias(aliasRaw, workId, source = "pto") {
     updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
     syncStatus: "pending"
   };
-  await storage2.put(storeName$6(PLAN_FACT_WORK_ALIASES_STORE), record);
+  await storage2.put(storeName$7(PLAN_FACT_WORK_ALIASES_STORE), record);
   return { ok: true, record };
 }
 async function removeAlias(id) {
   if (!canManageWorks()) return { ok: false, error: "Связки работ ведёт ПТО: у вашей роли нет этого права" };
-  const storage2 = services$4().storage;
+  const storage2 = services$5().storage;
   if (!(storage2 == null ? void 0 : storage2.getAll) || !(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   const current = (await listAliases()).find((record) => record.id === id);
   if (!current) return { ok: true };
-  await storage2.put(storeName$6(PLAN_FACT_WORK_ALIASES_STORE), {
+  await storage2.put(storeName$7(PLAN_FACT_WORK_ALIASES_STORE), {
     ...current,
     isDeleted: true,
     updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
@@ -1167,23 +1203,23 @@ function matchInCatalog(rawName, catalog) {
   return { workId: null, matchedBy: "none" };
 }
 const PLAN_FACT_FACTS_STORE = "PLAN_FACT_FACTS";
-function services$3() {
+function services$4() {
   const rbi = window.RBI;
   return rbi && rbi.services || {};
 }
-function storeName$5() {
+function storeName$6() {
   var _a, _b;
-  const stores = (_b = (_a = services$3().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a);
+  const stores = (_b = (_a = services$4().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a);
   const name = stores == null ? void 0 : stores.PLAN_FACT_FACTS;
   if (!name) throw new Error("Сторадж PLAN_FACT_FACTS не объявлен — обновите страницу, чтобы применилась миграция");
   return name;
 }
 function canRecordFact() {
-  const permissions = services$3().permissions;
+  const permissions = services$4().permissions;
   return !!(permissions && typeof permissions.canRecordFact === "function" && permissions.canRecordFact());
 }
 function currentAuthor$1() {
-  const permissions = services$3().permissions;
+  const permissions = services$4().permissions;
   if (permissions && typeof permissions.getCurrentEngineerName === "function") {
     return String(permissions.getCurrentEngineerName() || "Прораб");
   }
@@ -1191,7 +1227,7 @@ function currentAuthor$1() {
 }
 function newId$1() {
   var _a;
-  const generator = (_a = services$3().storage) == null ? void 0 : _a.generateId;
+  const generator = (_a = services$4().storage) == null ? void 0 : _a.generateId;
   if (typeof generator === "function") return generator("pffact");
   return `pffact_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -1210,7 +1246,7 @@ async function recordFact(input) {
   if (!canRecordFact()) return { ok: false, error: "Факт вносит прораб: у вашей роли нет этого права" };
   const checked = validate(input);
   if (!checked.ok) return checked;
-  const storage2 = services$3().storage;
+  const storage2 = services$4().storage;
   if (!storage2 || typeof storage2.put !== "function") return { ok: false, error: "Сервис storage недоступен" };
   const record = {
     id: newId$1(),
@@ -1232,16 +1268,16 @@ async function recordFact(input) {
     revision: 1,
     syncStatus: "pending"
   };
-  await storage2.put(storeName$5(), record);
+  await storage2.put(storeName$6(), record);
   return { ok: true, record };
 }
 async function correctFact(originalId, patch) {
   if (!canRecordFact()) return { ok: false, error: "Факт вносит прораб: у вашей роли нет этого права" };
-  const storage2 = services$3().storage;
+  const storage2 = services$4().storage;
   if (!storage2 || typeof storage2.put !== "function" || typeof storage2.getAll !== "function") {
     return { ok: false, error: "Сервис storage недоступен" };
   }
-  const all2 = await storage2.getAll(storeName$5());
+  const all2 = await storage2.getAll(storeName$6());
   const original = all2.find((record) => record.id === originalId);
   if (!original) return { ok: false, error: "Исходная запись факта не найдена" };
   if (original.supersededBy) return { ok: false, error: "Эта запись уже исправлена более поздней корректировкой" };
@@ -1261,14 +1297,14 @@ async function correctFact(originalId, patch) {
     revision: original.revision + 1,
     syncStatus: "pending"
   };
-  await storage2.put(storeName$5(), corrected);
+  await storage2.put(storeName$6(), corrected);
   const replaced = { ...original, supersededBy: corrected.id, syncStatus: "pending" };
-  await storage2.put(storeName$5(), replaced);
+  await storage2.put(storeName$6(), replaced);
   return { ok: true, record: corrected, replaced };
 }
 async function listFacts(objectId) {
   var _a, _b;
-  const all2 = await ((_b = (_a = services$3().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$5())) ?? [];
+  const all2 = await ((_b = (_a = services$4().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$6())) ?? [];
   return all2.filter((record) => record.objectId === objectId).sort((left, right) => String(right.createdAt).localeCompare(String(left.createdAt)));
 }
 function activeFacts(records) {
@@ -1349,13 +1385,13 @@ function buildPlanFactSummary(worRows, factRows, options = {}) {
   };
 }
 const PLAN_FACT_NORMS_STORE = "PLAN_FACT_NORMS";
-function services$2() {
+function services$3() {
   const rbi = window.RBI;
   return rbi && rbi.services || {};
 }
-function storeName$4() {
+function storeName$5() {
   var _a, _b;
-  const stores = (_b = (_a = services$2().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a);
+  const stores = (_b = (_a = services$3().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a);
   const name = stores == null ? void 0 : stores.PLAN_FACT_NORMS;
   if (!name) throw new Error("Сторадж PLAN_FACT_NORMS не объявлен — обновите страницу, чтобы применилась миграция");
   return name;
@@ -1383,7 +1419,7 @@ function defaultNormRecord(workKey) {
 }
 async function listNorms() {
   var _a, _b;
-  const stored = await ((_b = (_a = services$2().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$4())) ?? [];
+  const stored = await ((_b = (_a = services$3().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$5())) ?? [];
   const byKey = /* @__PURE__ */ new Map();
   for (const key of Object.keys(WORK_NORMS)) {
     const draft = defaultNormRecord(key);
@@ -1395,7 +1431,7 @@ async function listNorms() {
   return [...byKey.values()].sort((left, right) => left.rank - right.rank || left.name.localeCompare(right.name, "ru"));
 }
 function canManageNorms() {
-  const permissions = services$2().permissions;
+  const permissions = services$3().permissions;
   return !!(permissions && typeof permissions.canManageNorms === "function" && permissions.canManageNorms());
 }
 async function saveNorm(patch) {
@@ -1410,7 +1446,7 @@ async function saveNorm(patch) {
   const lag = normalizeDecimal(String(patch.lag ?? "0").replace(",", "."));
   if (!isDecimal(lag)) return { ok: false, error: "Пауза должна быть числом суток" };
   if (Number(lag) < 0) return { ok: false, error: "Пауза не может быть отрицательной" };
-  const permissions = services$2().permissions;
+  const permissions = services$3().permissions;
   const actor = permissions && typeof permissions.getCurrentEngineerName === "function" ? String(permissions.getCurrentEngineerName() || "ПТО") : "ПТО";
   const record = {
     ...draft,
@@ -1423,16 +1459,16 @@ async function saveNorm(patch) {
     updatedAt: nowIso$2(),
     syncStatus: "pending"
   };
-  const storage2 = services$2().storage;
+  const storage2 = services$3().storage;
   if (!storage2 || typeof storage2.put !== "function") return { ok: false, error: "Сервис storage недоступен" };
-  await storage2.put(storeName$4(), record);
+  await storage2.put(storeName$5(), record);
   return { ok: true, record };
 }
 async function resetNorm(workKey) {
   if (!canManageNorms()) return { ok: false, error: "Нормы задаёт ПТО: у вашей роли нет этого права" };
-  const storage2 = services$2().storage;
+  const storage2 = services$3().storage;
   if (!storage2 || typeof storage2.delete !== "function") return { ok: false, error: "Сервис storage недоступен" };
-  await storage2.delete(storeName$4(), workKey);
+  await storage2.delete(storeName$5(), workKey);
   return { ok: true };
 }
 async function normsForSchedule() {
@@ -1461,7 +1497,7 @@ function storage() {
   if (!service) throw new Error("Сервис storage недоступен — сохранение ВОР невозможно");
   return service;
 }
-function storeName$3(key) {
+function storeName$4(key) {
   var _a, _b;
   const stores = (_b = (_a = storage()).stores) == null ? void 0 : _b.call(_a);
   const name = stores == null ? void 0 : stores[key];
@@ -1495,7 +1531,7 @@ async function saveImport(params) {
     syncStatus: "pending",
     updatedAt: createdAt
   };
-  await ((_a = service.put) == null ? void 0 : _a.call(service, storeName$3(PLAN_FACT_IMPORTS_STORE), record));
+  await ((_a = service.put) == null ? void 0 : _a.call(service, storeName$4(PLAN_FACT_IMPORTS_STORE), record));
   const items = params.rows.map((row) => ({
     id: newId("pfwor"),
     objectId: params.objectId,
@@ -1518,32 +1554,41 @@ async function saveImport(params) {
     updatedAt: createdAt
   }));
   if (items.length > 0) {
-    if (typeof service.putBatch === "function") await service.putBatch(storeName$3(PLAN_FACT_WOR_STORE), items);
-    else for (const item of items) await ((_b = service.put) == null ? void 0 : _b.call(service, storeName$3(PLAN_FACT_WOR_STORE), item));
+    if (typeof service.putBatch === "function") await service.putBatch(storeName$4(PLAN_FACT_WOR_STORE), items);
+    else for (const item of items) await ((_b = service.put) == null ? void 0 : _b.call(service, storeName$4(PLAN_FACT_WOR_STORE), item));
   }
   return { importId, saved: items.length };
 }
 async function listImports(objectId) {
   var _a, _b;
-  const all2 = await ((_b = (_a = storage()).getAll) == null ? void 0 : _b.call(_a, storeName$3(PLAN_FACT_IMPORTS_STORE))) ?? [];
+  const all2 = await ((_b = (_a = storage()).getAll) == null ? void 0 : _b.call(_a, storeName$4(PLAN_FACT_IMPORTS_STORE))) ?? [];
   return all2.filter((record) => record.objectId === objectId).sort((left, right) => String(right.createdAt).localeCompare(String(left.createdAt)));
 }
 async function listWorRows(objectId, importId) {
   var _a, _b;
-  const all2 = await ((_b = (_a = storage()).getAll) == null ? void 0 : _b.call(_a, storeName$3(PLAN_FACT_WOR_STORE))) ?? [];
+  const all2 = await ((_b = (_a = storage()).getAll) == null ? void 0 : _b.call(_a, storeName$4(PLAN_FACT_WOR_STORE))) ?? [];
   return all2.filter(
-    (record) => record.objectId === objectId && true
+    (record) => record.objectId === objectId && (!importId || record.importId === importId)
   );
 }
 async function deleteImport(importId) {
   var _a, _b, _c;
   const service = storage();
-  const rows = await ((_a = service.getAll) == null ? void 0 : _a.call(service, storeName$3(PLAN_FACT_WOR_STORE))) ?? [];
+  const rows = await ((_a = service.getAll) == null ? void 0 : _a.call(service, storeName$4(PLAN_FACT_WOR_STORE))) ?? [];
   const own = rows.filter((record) => record.importId === importId);
-  for (const record of own) await ((_b = service.delete) == null ? void 0 : _b.call(service, storeName$3(PLAN_FACT_WOR_STORE), record.id));
-  await ((_c = service.delete) == null ? void 0 : _c.call(service, storeName$3(PLAN_FACT_IMPORTS_STORE), importId));
+  for (const record of own) await ((_b = service.delete) == null ? void 0 : _b.call(service, storeName$4(PLAN_FACT_WOR_STORE), record.id));
+  await ((_c = service.delete) == null ? void 0 : _c.call(service, storeName$4(PLAN_FACT_IMPORTS_STORE), importId));
   return { removedImport: true, removedRows: own.length };
 }
+const store = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  PLAN_FACT_IMPORTS_STORE,
+  PLAN_FACT_WOR_STORE,
+  deleteImport,
+  listImports,
+  listWorRows,
+  saveImport
+}, Symbol.toStringTag, { value: "Module" }));
 const PULL_STAMP_KEY = "rbi_plan_fact_last_pull_at";
 const PULL_OVERLAP_MS = 5e3;
 const BATCH = 400;
@@ -1558,7 +1603,7 @@ function platform() {
     client: scope.supabaseClient
   };
 }
-function storeName$2(key) {
+function storeName$3(key) {
   var _a, _b;
   const name = (_b = (_a = platform().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a)[key];
   if (!name) throw new Error(`Сторадж ${key} не объявлен — обновите страницу, чтобы применилась миграция`);
@@ -2067,13 +2112,13 @@ async function readiness() {
 async function pushEntity(spec, client, projectCode) {
   const storage2 = platform().storage;
   if (!(storage2 == null ? void 0 : storage2.getAll) || !(storage2 == null ? void 0 : storage2.put)) return { pushed: 0, failed: 0, missing: false, localMissing: false };
-  let store;
+  let store2;
   try {
-    store = storeName$2(spec.storeKey);
+    store2 = storeName$3(spec.storeKey);
   } catch (_error) {
     return { pushed: 0, failed: 0, missing: false, localMissing: true };
   }
-  const all2 = await storage2.getAll(store);
+  const all2 = await storage2.getAll(store2);
   const pending = all2.filter((record) => spec.shouldPush ? spec.shouldPush(record) : record.syncStatus !== "synced");
   if (pending.length === 0) return { pushed: 0, failed: 0, missing: false, localMissing: false };
   let pushed = 0;
@@ -2089,7 +2134,7 @@ async function pushEntity(spec, client, projectCode) {
     }
     for (const record of slice) {
       const stamped = spec.markAfterPush ? spec.markAfterPush(record) : record;
-      await storage2.put(store, { ...stamped, syncStatus: "synced", syncedAt: nowIso() });
+      await storage2.put(store2, { ...stamped, syncStatus: "synced", syncedAt: nowIso() });
       pushed += 1;
     }
   }
@@ -2098,9 +2143,9 @@ async function pushEntity(spec, client, projectCode) {
 async function pullEntity(spec, client, projectCode, since) {
   const storage2 = platform().storage;
   if (!(storage2 == null ? void 0 : storage2.getAll) || !(storage2 == null ? void 0 : storage2.put)) return { pulled: 0, failed: 0, missing: false, localMissing: false };
-  let store;
+  let store2;
   try {
-    store = storeName$2(spec.storeKey);
+    store2 = storeName$3(spec.storeKey);
   } catch (_error) {
     return { pulled: 0, failed: 0, missing: false, localMissing: true };
   }
@@ -2127,7 +2172,7 @@ async function pullEntity(spec, client, projectCode, since) {
   if (missing && incoming.length === 0) return { pulled: 0, failed: 0, missing: true, localMissing: false };
   if (incoming.length === 0) return { pulled: 0, failed: 0, missing: false, localMissing: false };
   const local = /* @__PURE__ */ new Map();
-  for (const record of await storage2.getAll(store)) local.set(String(record.id), record);
+  for (const record of await storage2.getAll(store2)) local.set(String(record.id), record);
   let pulled = 0;
   const writes = [];
   for (const row of incoming) {
@@ -2139,8 +2184,8 @@ async function pullEntity(spec, client, projectCode, since) {
     pulled += 1;
   }
   if (writes.length > 0) {
-    if (typeof storage2.putBatch === "function") await storage2.putBatch(store, writes);
-    else for (const record of writes) await storage2.put(store, record);
+    if (typeof storage2.putBatch === "function") await storage2.putBatch(store2, writes);
+    else for (const record of writes) await storage2.put(store2, record);
   }
   return { pulled, failed: 0, missing: false, localMissing: false };
 }
@@ -2198,7 +2243,7 @@ async function planFactQueue() {
   if (storage2 == null ? void 0 : storage2.getAll) {
     for (const spec of ENTITIES) {
       try {
-        const all2 = await storage2.getAll(storeName$2(spec.storeKey));
+        const all2 = await storage2.getAll(storeName$3(spec.storeKey));
         const count = all2.filter((record) => spec.shouldPush ? spec.shouldPush(record) : record.syncStatus !== "synced").length;
         byEntity[spec.key] = count;
         pending += count;
@@ -2634,13 +2679,13 @@ function reconciliationSummary(rows) {
   };
 }
 const PLAN_FACT_THRESHOLDS_STORE = "PLAN_FACT_THRESHOLDS";
-function services$1() {
+function services$2() {
   const rbi = window.RBI;
   return rbi && rbi.services || {};
 }
-function storeName$1() {
+function storeName$2() {
   var _a, _b;
-  const name = (_b = (_a = services$1().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a)[PLAN_FACT_THRESHOLDS_STORE];
+  const name = (_b = (_a = services$2().storage) == null ? void 0 : _a.stores) == null ? void 0 : _b.call(_a)[PLAN_FACT_THRESHOLDS_STORE];
   if (!name) throw new Error("Сторадж порогов не объявлен — обновите страницу, чтобы применилась миграция");
   return name;
 }
@@ -2661,24 +2706,24 @@ function parseThresholdInput(raw, field2) {
 async function loadThresholds(objectId) {
   var _a, _b;
   if (!objectId) return defaultRules();
-  const stored = await ((_b = (_a = services$1().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$1())) ?? [];
+  const stored = await ((_b = (_a = services$2().storage) == null ? void 0 : _a.getAll) == null ? void 0 : _b.call(_a, storeName$2())) ?? [];
   const record = stored.find((item) => item && item.objectId === objectId && Array.isArray(item.rules));
   if (!record || record.rules.length === 0) return defaultRules();
   const hasDefault = record.rules.some((rule) => rule.workId === null && rule.unit === null);
   return hasDefault ? record.rules : [...record.rules, { ...DEFAULT_THRESHOLD }];
 }
 async function saveThresholds(objectId, rules) {
-  const permissions = services$1().permissions;
+  const permissions = services$2().permissions;
   if (!(permissions && typeof permissions.canManageContours === "function" && permissions.canManageContours())) {
     return { ok: false, error: "Пороги сверки настраивает ПТО: у вашей роли нет права на правку объёмов" };
   }
-  const storage2 = services$1().storage;
+  const storage2 = services$2().storage;
   if (!(storage2 == null ? void 0 : storage2.put)) return { ok: false, error: "Сервис storage недоступен" };
   if (!objectId) return { ok: false, error: "Не выбран объект" };
   const hasDefault = rules.some((rule) => rule.workId === null && rule.unit === null);
   if (!hasDefault) return { ok: false, error: "Общее правило обязательно: иначе нечего применить к остальным видам работ" };
   const author2 = permissions && typeof permissions.getCurrentEngineerName === "function" ? String(permissions.getCurrentEngineerName() || "") : "";
-  await storage2.put(storeName$1(), {
+  await storage2.put(storeName$2(), {
     id: objectId,
     objectId,
     rules: rules.map((rule) => ({ ...rule })),
@@ -3996,6 +4041,516 @@ function planFactGap(plan, fact) {
   if (plan === null || fact === null) return null;
   return addDecimal(plan, fact.startsWith("-") ? fact.slice(1) : `-${fact}`);
 }
+const LOCATION_RULES = [
+  { id: "loc-section", pattern: "^Секц\\S*\\s*([\\d.]+)", target: "section", group: 1 },
+  { id: "loc-floor", pattern: "^Этаж\\s*([\\d.]+)", target: "floor", group: 1 },
+  { id: "loc-room-kio", pattern: "^КИО$", target: "room" },
+  { id: "loc-zone-mop", pattern: "^МОП", target: "zone" },
+  // Обмерная матрица: помещение задано голым номером квартиры («2», «15а»).
+  { id: "loc-room-number", pattern: "^\\d+\\s*[а-я]?$", target: "room" }
+];
+const MATRIX_WORKS = [
+  { columnIndex: 98, headerText: "Штукатурка гипсовая 10-20мм", unitRaw: "S, м2" },
+  { columnIndex: 99, headerText: "Штукатурка цеметная", unitRaw: "S, м2" },
+  { columnIndex: 100, headerText: "Шпаклёвка", unitRaw: "S, м2" },
+  { columnIndex: 101, headerText: "Обои", unitRaw: "S, м2" },
+  { columnIndex: 102, headerText: "Окраска обои", unitRaw: "S, м2" },
+  { columnIndex: 103, headerText: "Плинтус", unitRaw: "м.пог." },
+  { columnIndex: 104, headerText: "Ламинат", unitRaw: "S, м2" },
+  { columnIndex: 105, headerText: "Натяжной потолок", unitRaw: "S, м2" },
+  { columnIndex: 106, headerText: "Подшивной потолок", unitRaw: "S, м2" },
+  { columnIndex: 107, headerText: "Плитка стен СУ", unitRaw: "S, м2" },
+  { columnIndex: 108, headerText: "Пороги (в с/у)", unitRaw: "м.пог." },
+  { columnIndex: 109, headerText: "Плитка пола СУ", unitRaw: "S, м2" },
+  { columnIndex: 110, headerText: "Плитка балкон", unitRaw: "S, м3" },
+  { columnIndex: 111, headerText: "Откосы S, м2 Гипрок", unitRaw: "S, м2" }
+];
+const MATRIX_COLUMNS = [
+  { field: "section_floor", columnIndex: 1, headerText: "Секция" },
+  { field: "code", columnIndex: 2, headerText: "Этаж" },
+  { field: "location_label", columnIndex: 3, headerText: "Квартира" },
+  // Reader кладёт в эти колонки заголовок и значение колонки-работы: имя вида работ,
+  // единицу из второй строки шапки и объём из строки помещения.
+  { field: "name", columnIndex: 100, headerText: "колонка-работа" },
+  { field: "unit", columnIndex: 102, headerText: "единица колонки-работы" },
+  { field: "quantity", columnIndex: 101, headerText: "объём колонки-работы" }
+];
+const LIST_COLUMNS = [
+  { field: "code", columnIndex: 1, headerText: "№ п/п" },
+  { field: "name", columnIndex: 2, headerText: "Наименование работ" },
+  { field: "unit", columnIndex: 3, headerText: "Ед. изм." },
+  { field: "norm_consumption", columnIndex: 4, headerText: "Норма расхода" },
+  { field: "quantity", columnIndex: 5, headerText: "Объём" }
+];
+const MATRIX_WORKS_2 = [
+  { columnIndex: 106, headerText: "Штукатурка гипсовая 10-20мм", unitRaw: "S, м2" },
+  { columnIndex: 107, headerText: "Штукатурка цеметная", unitRaw: "S, м2" },
+  { columnIndex: 108, headerText: "Обои", unitRaw: "S, м2" },
+  { columnIndex: 109, headerText: "Окраска обои", unitRaw: "S, м2" },
+  { columnIndex: 110, headerText: "Плинтус", unitRaw: "м.пог." },
+  { columnIndex: 111, headerText: "Ламинат", unitRaw: "S, м2" },
+  { columnIndex: 112, headerText: "Плитка стен СУ", unitRaw: "S, м2" },
+  { columnIndex: 113, headerText: "Плитка пола СУ", unitRaw: "S, м2" },
+  { columnIndex: 114, headerText: "Натяжной потолок", unitRaw: "S, м2" },
+  { columnIndex: 115, headerText: "Подшивной потолок", unitRaw: "S, м2" },
+  { columnIndex: 116, headerText: "Пороги (в с/у)", unitRaw: "м.пог." },
+  { columnIndex: 117, headerText: "Плитка балкон", unitRaw: "S, м2" }
+];
+const MATRIX_COLUMNS_2 = [
+  { field: "section_floor", columnIndex: 1, headerText: "Секция" },
+  { field: "code", columnIndex: 2, headerText: "Этаж" },
+  { field: "location_label", columnIndex: 3, headerText: "Квартира" },
+  { field: "name", columnIndex: 105, headerText: "колонка-работа" },
+  { field: "unit", columnIndex: 107, headerText: "единица колонки-работы" },
+  { field: "quantity", columnIndex: 106, headerText: "объём колонки-работы" }
+];
+const FORM_PROFILES = [
+  {
+    id: "sputnik-matrix",
+    title: "Обмерная матрица (Спутник): строка = помещение",
+    matrix: true,
+    profile: {
+      id: "p-sputnik-matrix",
+      name: "Расчёт 1 секции Квартиры",
+      layout: "measurement_matrix",
+      headerRow: 1,
+      headerRows: 2,
+      columns: MATRIX_COLUMNS,
+      locationRules: LOCATION_RULES,
+      works: MATRIX_WORKS
+    }
+  },
+  {
+    id: "sputnik-matrix-2",
+    title: "Обмерная матрица, 2 секция (Спутник): другой состав колонок",
+    matrix: true,
+    profile: {
+      id: "p-sputnik-matrix-2",
+      name: "Расчёт 2 секция",
+      layout: "measurement_matrix",
+      headerRow: 1,
+      headerRows: 2,
+      columns: MATRIX_COLUMNS_2,
+      locationRules: LOCATION_RULES,
+      works: MATRIX_WORKS_2
+    }
+  },
+  {
+    id: "fkp-list",
+    title: "Плоский список (ФКП 142): локации строками, материалы отдельно",
+    matrix: false,
+    profile: {
+      id: "p-fkp-list",
+      name: "ФКП, 142",
+      layout: "outline_location_rows",
+      headerRow: 7,
+      headerRows: 3,
+      columns: LIST_COLUMNS,
+      locationRules: LOCATION_RULES,
+      works: [{ columnIndex: 2, headerText: "Корпус" }, { columnIndex: 2, headerText: "Комплекс работ" }],
+      sheetPattern: "ФКП"
+    }
+  }
+];
+function formProfileById(id) {
+  return FORM_PROFILES.find((form) => form.id === id) ?? null;
+}
+function normalizeContextOf(form) {
+  return {
+    units: UNITS,
+    works: WORKS,
+    aliases: WORK_ALIASES,
+    columns: form.profile.columns,
+    locationRules: form.profile.locationRules
+  };
+}
+function unresolvedWorks(rows) {
+  const byName = /* @__PURE__ */ new Map();
+  for (const row of rows) {
+    if (row.workId !== null) continue;
+    const raw = String(row.workRaw ?? "").trim();
+    if (!raw) continue;
+    const entry = byName.get(raw) ?? { raw, count: 0, units: /* @__PURE__ */ new Set() };
+    entry.count += 1;
+    if (row.unitRaw) entry.units.add(String(row.unitRaw));
+    byName.set(raw, entry);
+  }
+  return [...byName.values()].map((entry) => ({ raw: entry.raw, count: entry.count, units: [...entry.units].sort() })).sort((left, right) => right.count - left.count || left.raw.localeCompare(right.raw, "ru"));
+}
+function percentTenths(value, total) {
+  if (total <= 0) return 0;
+  const scaled = (BigInt(value) * 1000n + BigInt(Math.floor(total / 2))) / BigInt(total);
+  return Number(scaled) / 10;
+}
+function pathPart(item, part) {
+  const index2 = part === "section" ? 0 : 1;
+  return item.locationPath[index2] ?? "";
+}
+function autoMatchedWorks(rows, aliases) {
+  const confirmed = new Set(
+    aliases.filter((alias) => alias.source === "pto").map((alias) => alias.normalizedAlias)
+  );
+  const byName = /* @__PURE__ */ new Map();
+  for (const row of rows) {
+    if (row.workId === null) continue;
+    const key = normalizeWorkName(row.workRaw);
+    if (!key || confirmed.has(key)) continue;
+    const entry = byName.get(key) ?? { raw: row.workRaw, workId: row.workId, count: 0, workTitle: row.workRaw };
+    entry.count += 1;
+    byName.set(key, entry);
+  }
+  return [...byName.values()].sort((left, right) => right.count - left.count || left.raw.localeCompare(right.raw, "ru"));
+}
+function toWorRow(item, form) {
+  var _a;
+  if (item.quantity === null) return null;
+  const section = item.locationRoles ? item.locationRoles.section || "—" : pathPart(item, "section") || "—";
+  const floor = item.locationRoles ? item.locationRoles.floor || "—" : pathPart(item, "floor") || "—";
+  const place = ((_a = item.locationRoles) == null ? void 0 : _a.place) ?? (item.locationPath[item.locationPath.length - 1] ?? "");
+  return {
+    section,
+    floor,
+    // В плоском списке помещение не задано — работа идёт «по договору» (как в исходной форме).
+    place: form.matrix ? place : place || "по договору",
+    workRaw: item.workRaw,
+    workId: item.workId,
+    workMatch: item.workMatch,
+    matchReason: matchReason(item.workRaw, item.workId),
+    unitRaw: item.unitRaw,
+    unit: item.unit,
+    quantity: item.quantity,
+    fragment: item.fragment
+  };
+}
+function assembleResult(items, issues, counters, form, sheetName = "") {
+  const usable = items.filter((item) => item.quantity !== null);
+  const matched = usable.filter((item) => item.workId !== null);
+  const worRows = usable.map((item) => toWorRow(item, form)).filter((row) => row !== null);
+  const stats = {
+    sheet: sheetName || form.profile.name,
+    rows: counters.rowsTotal,
+    items: usable.length,
+    matched: matched.length,
+    matchedPercent: percentTenths(matched.length, usable.length),
+    materialsSkipped: counters.materialsSkipped,
+    unresolvedWorks: counters.unresolvedWorks,
+    unresolvedLocations: counters.unresolvedLocations,
+    needsDecision: usable.length - matched.length,
+    issues: issues.slice(0, 20).map((issue) => ({
+      code: issue.code,
+      message: issue.message,
+      row: issue.fragment.row
+    }))
+  };
+  return { rows: worRows, stats, issues };
+}
+function analyze(rows, form, context) {
+  var _a;
+  const result = normalizeRows(rows, context ?? normalizeContextOf(form));
+  return assembleResult(result.items, result.issues, result.stats, form, ((_a = rows[0]) == null ? void 0 : _a.sheet) ?? "");
+}
+function totalsByWork(rows) {
+  const groups = /* @__PURE__ */ new Map();
+  for (const row of rows) {
+    const key = row.workId ?? `raw:${row.workRaw}`;
+    const bucket = groups.get(key);
+    if (bucket) bucket.push(row);
+    else groups.set(key, [row]);
+  }
+  return [...groups.entries()].map(([key, bucket]) => ({
+    workKey: key,
+    workTitle: bucket[0].workRaw,
+    unit: bucket[0].unitRaw || bucket[0].unit || "",
+    // Сумма — точно, на строках (см. decimal.ts); форматирование делает интерфейс.
+    quantity: bucket.reduce((acc, row) => addDecimal(acc, row.quantity), "0")
+  }));
+}
+const EMPTY = "";
+function sheetJs() {
+  const lib = window.XLSX;
+  if (!lib || typeof lib.read !== "function") {
+    throw new Error("SheetJS (libs/xlsx.full.min.js) не загружен — чтение XLSX невозможно");
+  }
+  return lib;
+}
+function toCell(value) {
+  if (value === null || value === void 0) return null;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return value;
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return null;
+}
+function readXlsxSheets(input) {
+  const lib = sheetJs();
+  const buffer = input instanceof Uint8Array ? input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) : input;
+  const workbook = lib.read(buffer, { type: "array" });
+  return workbook.SheetNames.map((name) => {
+    const raw = lib.utils.sheet_to_json(workbook.Sheets[name], {
+      header: 1,
+      raw: true,
+      defval: null,
+      blankrows: true
+    });
+    return { name, rows: raw.map((row) => row.map(toCell)) };
+  });
+}
+function countFormulaCells(input) {
+  const lib = sheetJs();
+  const buffer = input instanceof Uint8Array ? input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) : input;
+  const workbook = lib.read(buffer, { type: "array" });
+  let formulas = 0;
+  const sheets = [];
+  for (const name of workbook.SheetNames) {
+    const sheet = workbook.Sheets[name];
+    if (!sheet) continue;
+    let inSheet = 0;
+    for (const key of Object.keys(sheet)) {
+      if (key.startsWith("!")) continue;
+      if (sheet[key] && typeof sheet[key].f === "string") inSheet += 1;
+    }
+    if (inSheet > 0) sheets.push(name);
+    formulas += inSheet;
+  }
+  return { formulas, sheets };
+}
+function text(value) {
+  if (value === null || value === void 0) return EMPTY;
+  if (typeof value === "boolean") return EMPTY;
+  return String(value).replace(/\s+/g, " ").trim();
+}
+function columnIndex(profile, field2) {
+  const mapping = profile.columns.find((column) => column.field === field2);
+  return mapping && mapping.columnIndex >= 1 ? mapping.columnIndex : null;
+}
+function cellAt(row, index2) {
+  if (index2 === null) return null;
+  return row[index2 - 1] ?? null;
+}
+function isFilled(value) {
+  if (value === null || value === void 0) return false;
+  return typeof value === "number" ? value !== 0 : text(value) !== EMPTY;
+}
+function dataStartRow(profile) {
+  return profile.headerRow + Math.max(1, profile.headerRows);
+}
+function matrixRows(sheet, profile, records) {
+  const sectionIndex = columnIndex(profile, "section_floor");
+  const rows = [];
+  for (const [offset, record] of records.entries()) {
+    const rowNumber = dataStartRow(profile) + offset;
+    const section = text(cellAt(record, sectionIndex));
+    const floor = text(cellAt(record, columnIndex(profile, "code")));
+    const place = text(cellAt(record, columnIndex(profile, "location_label")));
+    for (const work of profile.works ?? []) {
+      const quantityIndex = columnIndex(profile, "quantity") ?? work.columnIndex;
+      const quantity = record[work.columnIndex - 1] ?? null;
+      if (quantity === null || quantity === "") continue;
+      const cells = [];
+      const nameIndex = columnIndex(profile, "name");
+      if (nameIndex !== null) cells[nameIndex - 1] = work.headerText;
+      const unitIndex = columnIndex(profile, "unit");
+      if (unitIndex !== null && work.unitRaw) cells[unitIndex - 1] = work.unitRaw;
+      cells[quantityIndex - 1] = quantity;
+      rows.push({
+        sheet,
+        rowNumber,
+        cells,
+        locationContext: [section, floor, place].filter((part) => part !== EMPTY),
+        marker: null
+      });
+    }
+  }
+  return rows;
+}
+function outlineRows(sheet, profile, records) {
+  const nameIndex = columnIndex(profile, "name");
+  const consumptionIndex = columnIndex(profile, "norm_consumption");
+  const rules = profile.locationRules.map((rule) => new RegExp(rule.pattern, "i"));
+  const context = [];
+  const rows = [];
+  for (const [offset, record] of records.entries()) {
+    const rowNumber = dataStartRow(profile) + offset;
+    const name = text(cellAt(record, nameIndex));
+    if (!name) continue;
+    const isZone = (profile.works ?? []).some((work) => name.includes(work.headerText));
+    if (rules.some((rule) => rule.test(name)) || isZone) {
+      context.push(name);
+      continue;
+    }
+    if (!isFilled(cellAt(record, columnIndex(profile, "unit"))) || !isFilled(cellAt(record, columnIndex(profile, "quantity")))) {
+      continue;
+    }
+    const normConsumption = text(cellAt(record, consumptionIndex));
+    const material = normConsumption !== EMPTY && Number.isFinite(Number(normConsumption.replace(",", ".")));
+    rows.push({
+      sheet,
+      rowNumber,
+      cells: [...record],
+      locationContext: [...context],
+      marker: material ? "М" : null
+    });
+  }
+  return rows;
+}
+function buildRawRows(sheetCells, profile, sheetName) {
+  const sheet = sheetName ?? profile.name;
+  const records = sheetCells.slice(dataStartRow(profile) - 1);
+  if (profile.layout === "measurement_matrix") return matrixRows(sheet, profile, records);
+  return outlineRows(sheet, profile, records);
+}
+function pickSheet(sheets, profile) {
+  if (sheets.length === 0) return null;
+  const byName = sheets.find((sheet) => sheet.name === profile.name);
+  if (byName) return byName;
+  if (profile.sheetPattern) {
+    const re = new RegExp(profile.sheetPattern, "i");
+    const byPattern = sheets.find((sheet) => re.test(sheet.name));
+    if (byPattern) return byPattern;
+  }
+  return sheets[0];
+}
+function rawRowsFromSheets(sheets, profile, sheetName) {
+  const sheet = sheetName ? sheets.find((item) => item.name === sheetName) ?? pickSheet(sheets, profile) : pickSheet(sheets, profile);
+  if (!sheet) return [];
+  return buildRawRows(sheet.rows, profile, sheet.name);
+}
+const DEMO_WORKS = [
+  { name: "Штукатурка стен", unit: "м2" },
+  { name: "Окраска стен", unit: "м2" },
+  { name: "Плинтус", unit: "м.п." },
+  { name: "Устройство покрытия пола из ламината", unit: "м2" },
+  { name: "Облицовка стен керамогранитом (с/у)", unit: "м2" },
+  { name: "Устройство натяжных ПВХ потолков", unit: "м2" }
+];
+function demoSheet() {
+  const rows = [["Этаж", "Помещение", "Наименование работ", "Ед. изм.", "Объём", "Примечание"]];
+  const byFloor = {
+    "2": [DEMO_WORKS[0], DEMO_WORKS[1], DEMO_WORKS[2]],
+    "3": [DEMO_WORKS[3], DEMO_WORKS[4], DEMO_WORKS[5]]
+  };
+  let index2 = 0;
+  for (const floor of ["2", "3"]) {
+    for (let flat = 1; flat <= 4; flat += 1) {
+      for (let work = 0; work < 3; work += 1) {
+        const item = byFloor[floor][work];
+        const quantity = 12 + (index2 * 7 + flat * 3) % 40;
+        rows.push([floor, `кв. ${flat}`, item.name, item.unit, String(quantity), ""]);
+        index2 += 1;
+      }
+    }
+  }
+  return { name: "Демо-ВОР", rows };
+}
+function demoProfile() {
+  const form = formProfileById("fkp-list");
+  if (!form) throw new Error("Профиль разбора не найден — обновите страницу");
+  const columns = [
+    { field: "section_floor", columnIndex: 1, headerText: "Этаж" },
+    { field: "location_label", columnIndex: 2, headerText: "Помещение" },
+    { field: "name", columnIndex: 3, headerText: "Наименование работ" },
+    { field: "unit", columnIndex: 4, headerText: "Ед. изм." },
+    { field: "quantity", columnIndex: 5, headerText: "Объём" }
+  ];
+  return { profile: { ...form.profile, headerRow: 1, headerRows: 1, columns, sheetPattern: void 0 }, form };
+}
+function demoAnalysis() {
+  const { profile, form } = demoProfile();
+  const sheet = demoSheet();
+  const rows = rawRowsFromSheets([sheet], profile, sheet.name);
+  const context = normalizeContextOf({ ...form, profile });
+  const analysis = analyze(rows, { ...form, profile }, context);
+  return { analysis, profile, form, sheet };
+}
+function services$1() {
+  const rbi = window.RBI;
+  return (rbi == null ? void 0 : rbi.services) ?? {};
+}
+function storeName$1(key) {
+  var _a, _b, _c, _d;
+  const stores = (_d = (_c = (_b = (_a = window.RBI) == null ? void 0 : _a.services) == null ? void 0 : _b.storage) == null ? void 0 : _c.stores) == null ? void 0 : _d.call(_c);
+  const name = stores == null ? void 0 : stores[key];
+  if (!name) throw new Error(`Сторадж ${key} не объявлен — обновите страницу`);
+  return name;
+}
+async function seedDemo(objectName = "Демо-объект: ЖК Северный, корпус 1") {
+  var _a, _b, _c, _d, _e, _f, _g, _h;
+  const api = services$1();
+  if (!((_a = api.locations) == null ? void 0 : _a.createNode) || !((_b = api.storage) == null ? void 0 : _b.put)) {
+    throw new Error("Демо-данные недоступны: сервисы платформы не загрузились");
+  }
+  const node = await api.locations.createNode({ nodeType: "object", displayName: objectName });
+  await ((_d = (_c = api.objects) == null ? void 0 : _c.rebuildFromLocations) == null ? void 0 : _d.call(_c));
+  try {
+    const assigned = ((_f = (_e = api.permissions) == null ? void 0 : _e.getAssignedProjects) == null ? void 0 : _f.call(_e)) ?? [];
+    if (!assigned.includes(node.id)) {
+      const next = [...assigned, node.id];
+      await ((_h = (_g = api.settings) == null ? void 0 : _g.set) == null ? void 0 : _h.call(_g, "assignedProjects", next));
+    }
+  } catch (_error) {
+  }
+  const { analysis, profile, form } = demoAnalysis();
+  if (analysis.rows.length === 0) {
+    throw new Error("Демо-ВОР не разобрался — сообщите об ошибке, данные объекта созданы");
+  }
+  const saved = await saveImport({
+    objectId: node.id,
+    filename: "Демо-ВОР (синтетические данные).xlsx",
+    profileId: profile.id,
+    profileTitle: `${form.title} · демо`,
+    rows: analysis.rows,
+    stats: analysis.stats
+  });
+  const rows = await Promise.resolve().then(() => store).then((module) => module.listWorRows(node.id));
+  for (const [index2, row] of rows.entries()) {
+    const plan = Number(row.quantity);
+    await setContour({ worItemId: row.id, objectId: node.id, kind: "CONTRACT", quantity: String(plan), source: "демо" });
+    await setContour({
+      worItemId: row.id,
+      objectId: node.id,
+      kind: "PROPOSED",
+      quantity: String(Math.round(plan * 1.05 * 100) / 100),
+      source: "демо"
+    });
+    if (index2 % 3 === 0) {
+      await setContour({
+        worItemId: row.id,
+        objectId: node.id,
+        kind: "RD",
+        quantity: String(Math.round(plan * 1.12 * 100) / 100),
+        source: "демо"
+      });
+    }
+    if (index2 % 4 === 0) {
+      await setContour({
+        worItemId: row.id,
+        objectId: node.id,
+        kind: "CUSTOMER_ACCEPTED",
+        quantity: String(Math.round(plan * 0.95 * 100) / 100),
+        source: "демо"
+      });
+    }
+  }
+  const factsStore = storeName$1("PLAN_FACT_FACTS");
+  for (const [index2, row] of rows.entries()) {
+    if (index2 % 4 !== 0) continue;
+    await api.storage.put(factsStore, {
+      id: `pffact_demo_${row.id}`,
+      objectId: node.id,
+      section: row.section,
+      floor: row.floor,
+      place: row.place,
+      workKey: row.workId,
+      workRaw: row.workRaw,
+      unit: row.unit,
+      quantity: String(Math.round(Number(row.quantity) * 0.4 * 100) / 100),
+      factDate: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+      comment: "Демо-данные",
+      author: "Демо",
+      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+      syncStatus: "pending"
+    });
+  }
+  return { objectId: node.id, objectName, importId: saved.importId, positions: analysis.rows.length };
+}
 const OBJECT_LIMIT = 20;
 const state$4 = {
   digest: null,
@@ -4004,6 +4559,8 @@ const state$4 = {
   sort: { ...NO_SORT },
   loading: false,
   error: "",
+  note: "",
+  seeding: false,
   unit: "",
   showTable: false
 };
@@ -4148,12 +4705,7 @@ function digestTable() {
     const column = COLUMNS.find((item) => item.key === key);
     return column ? column.value(row) : "";
   });
-  if (rows.length === 0) {
-    return `<div class="bg-surface border border-surface rounded-xl p-3 mb-3">
-      <div class="text-rbi-caption text-muted">Объектов не видно — это про права роли, а не про отсутствие работ.
-      Проверьте доступы в «Роли и права».</div>
-    </div>`;
-  }
+  if (rows.length === 0) return emptyObjectsHtml();
   const head = COLUMNS.map((column) => {
     const active = state$4.sort.key === column.key;
     return `<th data-sort-key="${escapeHtml$4(column.key)}"
@@ -4311,14 +4863,24 @@ function worksChart() {
         тёмная под ней — выполнение факта к плану (если факт внесён). Справа — доля в объёме.</div>
     </div>`;
 }
+function emptyObjectsHtml() {
+  return `
+    <div class="bg-surface border border-surface rounded-xl p-3 mb-3">
+      <div class="text-rbi-body font-bold text-ink mb-1">Объектов не видно</div>
+      <div class="text-rbi-caption text-muted mb-2">Это про права роли, а не про отсутствие работ.
+        Проверьте доступы в «Роли и права» — либо посмотрите модуль на демо-данных:
+        они создаются только в этом браузере и никуда не отправляются.</div>
+      <button type="button" id="pf-seed-demo" ${state$4.seeding ? "disabled" : ""}
+        class="text-rbi-body font-bold text-white bg-brand px-3 py-1.5 rounded-xl disabled:opacity-50">
+        ${state$4.seeding ? "Создаю демо-данные…" : "Загрузить демо-данные (объект + пробная ВОР)"}</button>
+      ${state$4.note ? `<div class="text-rbi-caption text-brand mt-2">${escapeHtml$4(state$4.note)}</div>` : ""}
+      ${state$4.error ? `<div class="text-rbi-body text-danger mt-2">${escapeHtml$4(state$4.error)}</div>` : ""}
+    </div>`;
+}
 function objectCards() {
   const digest = state$4.digest;
   if (!digest) return "";
-  if (digest.objects.length === 0) {
-    return `<div class="bg-surface border border-surface rounded-xl p-3 mb-3">
-      <div class="text-rbi-caption text-muted">Объектов не видно — это про права роли, а не про отсутствие работ.</div>
-    </div>`;
-  }
+  if (digest.objects.length === 0) return emptyObjectsHtml();
   const cards = digest.objects.map((object) => {
     const percent = barWidth(object.fact, object.plan);
     const gap = planFactGap(object.plan, object.fact);
@@ -4384,6 +4946,8 @@ function render$2() {
       · ${escapeHtml$4(record.actor || "—")} · ${escapeHtml$4(String(record.createdAt).slice(5, 16).replace("T", " "))}
       ${record.reason ? `· ${escapeHtml$4(record.reason)}` : ""}</li>`).join("");
   container.innerHTML = `
+    ${state$4.note ? `<div class="text-rbi-caption text-brand mb-2">${escapeHtml$4(state$4.note)}</div>` : ""}
+    ${state$4.error ? `<div class="text-rbi-body text-danger mb-2">${escapeHtml$4(state$4.error)}</div>` : ""}
     <div class="bg-surface border border-surface rounded-xl p-4 mb-3">
       <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -4429,8 +4993,23 @@ function render$2() {
   `;
   bind$3();
 }
+async function runSeedDemo() {
+  if (state$4.seeding) return;
+  state$4.seeding = true;
+  state$4.error = "";
+  state$4.note = "";
+  render$2();
+  try {
+    const result = await seedDemo();
+    state$4.note = `Готово: «${result.objectName}», позиций ${result.positions}. Данные только в этом браузере — их можно удалить очисткой данных сайта.`;
+  } catch (error) {
+    state$4.error = error instanceof Error ? error.message : String(error);
+  }
+  state$4.seeding = false;
+  await mountDashboardPanel();
+}
 function bind$3() {
-  var _a;
+  var _a, _b;
   const container = root$2();
   if (!container) return;
   bindSortableTable(container.querySelector("#pf-dashboard-table"), state$4.sort, (next) => {
@@ -4440,6 +5019,9 @@ function bind$3() {
   (_a = container.querySelector("#pf-dashboard-view")) == null ? void 0 : _a.addEventListener("click", () => {
     state$4.showTable = !state$4.showTable;
     render$2();
+  });
+  (_b = container.querySelector("#pf-seed-demo")) == null ? void 0 : _b.addEventListener("click", () => {
+    void runSeedDemo();
   });
   container.querySelectorAll("[data-pf-unit]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -5483,373 +6065,6 @@ async function runBuild() {
   }
   state$2.busy = false;
   render$1();
-}
-const LOCATION_RULES = [
-  { id: "loc-section", pattern: "^Секц\\S*\\s*([\\d.]+)", target: "section", group: 1 },
-  { id: "loc-floor", pattern: "^Этаж\\s*([\\d.]+)", target: "floor", group: 1 },
-  { id: "loc-room-kio", pattern: "^КИО$", target: "room" },
-  { id: "loc-zone-mop", pattern: "^МОП", target: "zone" },
-  // Обмерная матрица: помещение задано голым номером квартиры («2», «15а»).
-  { id: "loc-room-number", pattern: "^\\d+\\s*[а-я]?$", target: "room" }
-];
-const MATRIX_WORKS = [
-  { columnIndex: 98, headerText: "Штукатурка гипсовая 10-20мм", unitRaw: "S, м2" },
-  { columnIndex: 99, headerText: "Штукатурка цеметная", unitRaw: "S, м2" },
-  { columnIndex: 100, headerText: "Шпаклёвка", unitRaw: "S, м2" },
-  { columnIndex: 101, headerText: "Обои", unitRaw: "S, м2" },
-  { columnIndex: 102, headerText: "Окраска обои", unitRaw: "S, м2" },
-  { columnIndex: 103, headerText: "Плинтус", unitRaw: "м.пог." },
-  { columnIndex: 104, headerText: "Ламинат", unitRaw: "S, м2" },
-  { columnIndex: 105, headerText: "Натяжной потолок", unitRaw: "S, м2" },
-  { columnIndex: 106, headerText: "Подшивной потолок", unitRaw: "S, м2" },
-  { columnIndex: 107, headerText: "Плитка стен СУ", unitRaw: "S, м2" },
-  { columnIndex: 108, headerText: "Пороги (в с/у)", unitRaw: "м.пог." },
-  { columnIndex: 109, headerText: "Плитка пола СУ", unitRaw: "S, м2" },
-  { columnIndex: 110, headerText: "Плитка балкон", unitRaw: "S, м3" },
-  { columnIndex: 111, headerText: "Откосы S, м2 Гипрок", unitRaw: "S, м2" }
-];
-const MATRIX_COLUMNS = [
-  { field: "section_floor", columnIndex: 1, headerText: "Секция" },
-  { field: "code", columnIndex: 2, headerText: "Этаж" },
-  { field: "location_label", columnIndex: 3, headerText: "Квартира" },
-  // Reader кладёт в эти колонки заголовок и значение колонки-работы: имя вида работ,
-  // единицу из второй строки шапки и объём из строки помещения.
-  { field: "name", columnIndex: 100, headerText: "колонка-работа" },
-  { field: "unit", columnIndex: 102, headerText: "единица колонки-работы" },
-  { field: "quantity", columnIndex: 101, headerText: "объём колонки-работы" }
-];
-const LIST_COLUMNS = [
-  { field: "code", columnIndex: 1, headerText: "№ п/п" },
-  { field: "name", columnIndex: 2, headerText: "Наименование работ" },
-  { field: "unit", columnIndex: 3, headerText: "Ед. изм." },
-  { field: "norm_consumption", columnIndex: 4, headerText: "Норма расхода" },
-  { field: "quantity", columnIndex: 5, headerText: "Объём" }
-];
-const MATRIX_WORKS_2 = [
-  { columnIndex: 106, headerText: "Штукатурка гипсовая 10-20мм", unitRaw: "S, м2" },
-  { columnIndex: 107, headerText: "Штукатурка цеметная", unitRaw: "S, м2" },
-  { columnIndex: 108, headerText: "Обои", unitRaw: "S, м2" },
-  { columnIndex: 109, headerText: "Окраска обои", unitRaw: "S, м2" },
-  { columnIndex: 110, headerText: "Плинтус", unitRaw: "м.пог." },
-  { columnIndex: 111, headerText: "Ламинат", unitRaw: "S, м2" },
-  { columnIndex: 112, headerText: "Плитка стен СУ", unitRaw: "S, м2" },
-  { columnIndex: 113, headerText: "Плитка пола СУ", unitRaw: "S, м2" },
-  { columnIndex: 114, headerText: "Натяжной потолок", unitRaw: "S, м2" },
-  { columnIndex: 115, headerText: "Подшивной потолок", unitRaw: "S, м2" },
-  { columnIndex: 116, headerText: "Пороги (в с/у)", unitRaw: "м.пог." },
-  { columnIndex: 117, headerText: "Плитка балкон", unitRaw: "S, м2" }
-];
-const MATRIX_COLUMNS_2 = [
-  { field: "section_floor", columnIndex: 1, headerText: "Секция" },
-  { field: "code", columnIndex: 2, headerText: "Этаж" },
-  { field: "location_label", columnIndex: 3, headerText: "Квартира" },
-  { field: "name", columnIndex: 105, headerText: "колонка-работа" },
-  { field: "unit", columnIndex: 107, headerText: "единица колонки-работы" },
-  { field: "quantity", columnIndex: 106, headerText: "объём колонки-работы" }
-];
-const FORM_PROFILES = [
-  {
-    id: "sputnik-matrix",
-    title: "Обмерная матрица (Спутник): строка = помещение",
-    matrix: true,
-    profile: {
-      id: "p-sputnik-matrix",
-      name: "Расчёт 1 секции Квартиры",
-      layout: "measurement_matrix",
-      headerRow: 1,
-      headerRows: 2,
-      columns: MATRIX_COLUMNS,
-      locationRules: LOCATION_RULES,
-      works: MATRIX_WORKS
-    }
-  },
-  {
-    id: "sputnik-matrix-2",
-    title: "Обмерная матрица, 2 секция (Спутник): другой состав колонок",
-    matrix: true,
-    profile: {
-      id: "p-sputnik-matrix-2",
-      name: "Расчёт 2 секция",
-      layout: "measurement_matrix",
-      headerRow: 1,
-      headerRows: 2,
-      columns: MATRIX_COLUMNS_2,
-      locationRules: LOCATION_RULES,
-      works: MATRIX_WORKS_2
-    }
-  },
-  {
-    id: "fkp-list",
-    title: "Плоский список (ФКП 142): локации строками, материалы отдельно",
-    matrix: false,
-    profile: {
-      id: "p-fkp-list",
-      name: "ФКП, 142",
-      layout: "outline_location_rows",
-      headerRow: 7,
-      headerRows: 3,
-      columns: LIST_COLUMNS,
-      locationRules: LOCATION_RULES,
-      works: [{ columnIndex: 2, headerText: "Корпус" }, { columnIndex: 2, headerText: "Комплекс работ" }],
-      sheetPattern: "ФКП"
-    }
-  }
-];
-function formProfileById(id) {
-  return FORM_PROFILES.find((form) => form.id === id) ?? null;
-}
-function normalizeContextOf(form) {
-  return {
-    units: UNITS,
-    works: WORKS,
-    aliases: WORK_ALIASES,
-    columns: form.profile.columns,
-    locationRules: form.profile.locationRules
-  };
-}
-function unresolvedWorks(rows) {
-  const byName = /* @__PURE__ */ new Map();
-  for (const row of rows) {
-    if (row.workId !== null) continue;
-    const raw = String(row.workRaw ?? "").trim();
-    if (!raw) continue;
-    const entry = byName.get(raw) ?? { raw, count: 0, units: /* @__PURE__ */ new Set() };
-    entry.count += 1;
-    if (row.unitRaw) entry.units.add(String(row.unitRaw));
-    byName.set(raw, entry);
-  }
-  return [...byName.values()].map((entry) => ({ raw: entry.raw, count: entry.count, units: [...entry.units].sort() })).sort((left, right) => right.count - left.count || left.raw.localeCompare(right.raw, "ru"));
-}
-function percentTenths(value, total) {
-  if (total <= 0) return 0;
-  const scaled = (BigInt(value) * 1000n + BigInt(Math.floor(total / 2))) / BigInt(total);
-  return Number(scaled) / 10;
-}
-function pathPart(item, part) {
-  const index2 = part === "section" ? 0 : 1;
-  return item.locationPath[index2] ?? "";
-}
-function autoMatchedWorks(rows, aliases) {
-  const confirmed = new Set(
-    aliases.filter((alias) => alias.source === "pto").map((alias) => alias.normalizedAlias)
-  );
-  const byName = /* @__PURE__ */ new Map();
-  for (const row of rows) {
-    if (row.workId === null) continue;
-    const key = normalizeWorkName(row.workRaw);
-    if (!key || confirmed.has(key)) continue;
-    const entry = byName.get(key) ?? { raw: row.workRaw, workId: row.workId, count: 0, workTitle: row.workRaw };
-    entry.count += 1;
-    byName.set(key, entry);
-  }
-  return [...byName.values()].sort((left, right) => right.count - left.count || left.raw.localeCompare(right.raw, "ru"));
-}
-function toWorRow(item, form) {
-  var _a;
-  if (item.quantity === null) return null;
-  const section = item.locationRoles ? item.locationRoles.section || "—" : pathPart(item, "section") || "—";
-  const floor = item.locationRoles ? item.locationRoles.floor || "—" : pathPart(item, "floor") || "—";
-  const place = ((_a = item.locationRoles) == null ? void 0 : _a.place) ?? (item.locationPath[item.locationPath.length - 1] ?? "");
-  return {
-    section,
-    floor,
-    // В плоском списке помещение не задано — работа идёт «по договору» (как в исходной форме).
-    place: form.matrix ? place : place || "по договору",
-    workRaw: item.workRaw,
-    workId: item.workId,
-    workMatch: item.workMatch,
-    matchReason: matchReason(item.workRaw, item.workId),
-    unitRaw: item.unitRaw,
-    unit: item.unit,
-    quantity: item.quantity,
-    fragment: item.fragment
-  };
-}
-function assembleResult(items, issues, counters, form, sheetName = "") {
-  const usable = items.filter((item) => item.quantity !== null);
-  const matched = usable.filter((item) => item.workId !== null);
-  const worRows = usable.map((item) => toWorRow(item, form)).filter((row) => row !== null);
-  const stats = {
-    sheet: sheetName || form.profile.name,
-    rows: counters.rowsTotal,
-    items: usable.length,
-    matched: matched.length,
-    matchedPercent: percentTenths(matched.length, usable.length),
-    materialsSkipped: counters.materialsSkipped,
-    unresolvedWorks: counters.unresolvedWorks,
-    unresolvedLocations: counters.unresolvedLocations,
-    needsDecision: usable.length - matched.length,
-    issues: issues.slice(0, 20).map((issue) => ({
-      code: issue.code,
-      message: issue.message,
-      row: issue.fragment.row
-    }))
-  };
-  return { rows: worRows, stats, issues };
-}
-function totalsByWork(rows) {
-  const groups = /* @__PURE__ */ new Map();
-  for (const row of rows) {
-    const key = row.workId ?? `raw:${row.workRaw}`;
-    const bucket = groups.get(key);
-    if (bucket) bucket.push(row);
-    else groups.set(key, [row]);
-  }
-  return [...groups.entries()].map(([key, bucket]) => ({
-    workKey: key,
-    workTitle: bucket[0].workRaw,
-    unit: bucket[0].unitRaw || bucket[0].unit || "",
-    // Сумма — точно, на строках (см. decimal.ts); форматирование делает интерфейс.
-    quantity: bucket.reduce((acc, row) => addDecimal(acc, row.quantity), "0")
-  }));
-}
-const EMPTY = "";
-function sheetJs() {
-  const lib = window.XLSX;
-  if (!lib || typeof lib.read !== "function") {
-    throw new Error("SheetJS (libs/xlsx.full.min.js) не загружен — чтение XLSX невозможно");
-  }
-  return lib;
-}
-function toCell(value) {
-  if (value === null || value === void 0) return null;
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return value;
-  if (value instanceof Date) return value.toISOString().slice(0, 10);
-  return null;
-}
-function readXlsxSheets(input) {
-  const lib = sheetJs();
-  const buffer = input instanceof Uint8Array ? input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) : input;
-  const workbook = lib.read(buffer, { type: "array" });
-  return workbook.SheetNames.map((name) => {
-    const raw = lib.utils.sheet_to_json(workbook.Sheets[name], {
-      header: 1,
-      raw: true,
-      defval: null,
-      blankrows: true
-    });
-    return { name, rows: raw.map((row) => row.map(toCell)) };
-  });
-}
-function countFormulaCells(input) {
-  const lib = sheetJs();
-  const buffer = input instanceof Uint8Array ? input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength) : input;
-  const workbook = lib.read(buffer, { type: "array" });
-  let formulas = 0;
-  const sheets = [];
-  for (const name of workbook.SheetNames) {
-    const sheet = workbook.Sheets[name];
-    if (!sheet) continue;
-    let inSheet = 0;
-    for (const key of Object.keys(sheet)) {
-      if (key.startsWith("!")) continue;
-      if (sheet[key] && typeof sheet[key].f === "string") inSheet += 1;
-    }
-    if (inSheet > 0) sheets.push(name);
-    formulas += inSheet;
-  }
-  return { formulas, sheets };
-}
-function text(value) {
-  if (value === null || value === void 0) return EMPTY;
-  if (typeof value === "boolean") return EMPTY;
-  return String(value).replace(/\s+/g, " ").trim();
-}
-function columnIndex(profile, field2) {
-  const mapping = profile.columns.find((column) => column.field === field2);
-  return mapping && mapping.columnIndex >= 1 ? mapping.columnIndex : null;
-}
-function cellAt(row, index2) {
-  if (index2 === null) return null;
-  return row[index2 - 1] ?? null;
-}
-function isFilled(value) {
-  if (value === null || value === void 0) return false;
-  return typeof value === "number" ? value !== 0 : text(value) !== EMPTY;
-}
-function dataStartRow(profile) {
-  return profile.headerRow + Math.max(1, profile.headerRows);
-}
-function matrixRows(sheet, profile, records) {
-  const sectionIndex = columnIndex(profile, "section_floor");
-  const rows = [];
-  for (const [offset, record] of records.entries()) {
-    const rowNumber = dataStartRow(profile) + offset;
-    const section = text(cellAt(record, sectionIndex));
-    const floor = text(cellAt(record, columnIndex(profile, "code")));
-    const place = text(cellAt(record, columnIndex(profile, "location_label")));
-    for (const work of profile.works ?? []) {
-      const quantityIndex = columnIndex(profile, "quantity") ?? work.columnIndex;
-      const quantity = record[work.columnIndex - 1] ?? null;
-      if (quantity === null || quantity === "") continue;
-      const cells = [];
-      const nameIndex = columnIndex(profile, "name");
-      if (nameIndex !== null) cells[nameIndex - 1] = work.headerText;
-      const unitIndex = columnIndex(profile, "unit");
-      if (unitIndex !== null && work.unitRaw) cells[unitIndex - 1] = work.unitRaw;
-      cells[quantityIndex - 1] = quantity;
-      rows.push({
-        sheet,
-        rowNumber,
-        cells,
-        locationContext: [section, floor, place].filter((part) => part !== EMPTY),
-        marker: null
-      });
-    }
-  }
-  return rows;
-}
-function outlineRows(sheet, profile, records) {
-  const nameIndex = columnIndex(profile, "name");
-  const consumptionIndex = columnIndex(profile, "norm_consumption");
-  const rules = profile.locationRules.map((rule) => new RegExp(rule.pattern, "i"));
-  const context = [];
-  const rows = [];
-  for (const [offset, record] of records.entries()) {
-    const rowNumber = dataStartRow(profile) + offset;
-    const name = text(cellAt(record, nameIndex));
-    if (!name) continue;
-    const isZone = (profile.works ?? []).some((work) => name.includes(work.headerText));
-    if (rules.some((rule) => rule.test(name)) || isZone) {
-      context.push(name);
-      continue;
-    }
-    if (!isFilled(cellAt(record, columnIndex(profile, "unit"))) || !isFilled(cellAt(record, columnIndex(profile, "quantity")))) {
-      continue;
-    }
-    const normConsumption = text(cellAt(record, consumptionIndex));
-    const material = normConsumption !== EMPTY && Number.isFinite(Number(normConsumption.replace(",", ".")));
-    rows.push({
-      sheet,
-      rowNumber,
-      cells: [...record],
-      locationContext: [...context],
-      marker: material ? "М" : null
-    });
-  }
-  return rows;
-}
-function buildRawRows(sheetCells, profile, sheetName) {
-  const sheet = sheetName ?? profile.name;
-  const records = sheetCells.slice(dataStartRow(profile) - 1);
-  if (profile.layout === "measurement_matrix") return matrixRows(sheet, profile, records);
-  return outlineRows(sheet, profile, records);
-}
-function pickSheet(sheets, profile) {
-  if (sheets.length === 0) return null;
-  const byName = sheets.find((sheet) => sheet.name === profile.name);
-  if (byName) return byName;
-  if (profile.sheetPattern) {
-    const re = new RegExp(profile.sheetPattern, "i");
-    const byPattern = sheets.find((sheet) => re.test(sheet.name));
-    if (byPattern) return byPattern;
-  }
-  return sheets[0];
-}
-function rawRowsFromSheets(sheets, profile, sheetName) {
-  const sheet = sheetName ? sheets.find((item) => item.name === sheetName) ?? pickSheet(sheets, profile) : pickSheet(sheets, profile);
-  if (!sheet) return [];
-  return buildRawRows(sheet.rows, profile, sheet.name);
 }
 function decodeCsv(buffer) {
   const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);

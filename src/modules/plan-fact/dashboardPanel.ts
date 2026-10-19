@@ -19,6 +19,7 @@ import { sumDecimal } from './domain/decimal';
 import { activeFacts, listFacts } from './domain/fact';
 import { listNorms } from './domain/norms';
 import { reconcileRows, reconciliationSummary } from './domain/reconcile';
+import { seedDemo } from './domain/demo';
 import { listImports, listWorRows } from './domain/store';
 import { loadThresholds } from './domain/thresholds';
 import { listVisibleObjects, objectDisplayName } from './objects';
@@ -36,6 +37,8 @@ interface PanelState {
   sort: SortState;
   loading: boolean;
   error: string;
+  note: string;
+  seeding: boolean;
   /** Единица измерения, выбранная для диаграммы работ. */
   unit: string;
   /** Показывать таблицу вместо карточек — по умолчанию нет: руководителю нужны картинки. */
@@ -49,6 +52,8 @@ const state: PanelState = {
   sort: { ...NO_SORT },
   loading: false,
   error: '',
+  note: '',
+  seeding: false,
   unit: '',
   showTable: false
 };
@@ -231,12 +236,7 @@ function digestTable(): string {
     return column ? column.value(row) : '';
   });
 
-  if (rows.length === 0) {
-    return `<div class="bg-surface border border-surface rounded-xl p-3 mb-3">
-      <div class="text-rbi-caption text-muted">Объектов не видно — это про права роли, а не про отсутствие работ.
-      Проверьте доступы в «Роли и права».</div>
-    </div>`;
-  }
+  if (rows.length === 0) return emptyObjectsHtml();
 
   const head = COLUMNS.map((column) => {
     const active = state.sort.key === column.key;
@@ -422,15 +422,27 @@ function worksChart(): string {
     </div>`;
 }
 
+/** Пустой экран: подсказка про права + кнопка демо-данных. Один и тот же в обеих ветках. */
+function emptyObjectsHtml(): string {
+  return `
+    <div class="bg-surface border border-surface rounded-xl p-3 mb-3">
+      <div class="text-rbi-body font-bold text-ink mb-1">Объектов не видно</div>
+      <div class="text-rbi-caption text-muted mb-2">Это про права роли, а не про отсутствие работ.
+        Проверьте доступы в «Роли и права» — либо посмотрите модуль на демо-данных:
+        они создаются только в этом браузере и никуда не отправляются.</div>
+      <button type="button" id="pf-seed-demo" ${state.seeding ? 'disabled' : ''}
+        class="text-rbi-body font-bold text-white bg-brand px-3 py-1.5 rounded-xl disabled:opacity-50">
+        ${state.seeding ? 'Создаю демо-данные…' : 'Загрузить демо-данные (объект + пробная ВОР)'}</button>
+      ${state.note ? `<div class="text-rbi-caption text-brand mt-2">${escapeHtml(state.note)}</div>` : ''}
+      ${state.error ? `<div class="text-rbi-body text-danger mt-2">${escapeHtml(state.error)}</div>` : ''}
+    </div>`;
+}
+
 /** Карточки объектов: вместо таблицы — то, что видно глазами. */
 function objectCards(): string {
   const digest = state.digest;
   if (!digest) return '';
-  if (digest.objects.length === 0) {
-    return `<div class="bg-surface border border-surface rounded-xl p-3 mb-3">
-      <div class="text-rbi-caption text-muted">Объектов не видно — это про права роли, а не про отсутствие работ.</div>
-    </div>`;
-  }
+  if (digest.objects.length === 0) return emptyObjectsHtml();
 
   const cards = digest.objects.map((object) => {
     const percent = barWidth(object.fact, object.plan);
@@ -506,6 +518,8 @@ function render(): void {
       ${record.reason ? `· ${escapeHtml(record.reason)}` : ''}</li>`).join('');
 
   container.innerHTML = `
+    ${state.note ? `<div class="text-rbi-caption text-brand mb-2">${escapeHtml(state.note)}</div>` : ''}
+    ${state.error ? `<div class="text-rbi-body text-danger mb-2">${escapeHtml(state.error)}</div>` : ''}
     <div class="bg-surface border border-surface rounded-xl p-4 mb-3">
       <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -552,6 +566,30 @@ function render(): void {
   bind();
 }
 
+/**
+ * Демо-данные для показа: объект + пробная ВОР + контуры + факт.
+ *
+ * Опубликованная страница работает локально, и у нового человека нет ни объекта, ни ВОР —
+ * он видит пустые разделы. Кнопка создаёт их тем же путём, что настоящий импорт, и подписана
+ * как демо: только этот браузер, ничего в облако, данные синтетические.
+ */
+async function runSeedDemo(): Promise<void> {
+  if (state.seeding) return;
+  state.seeding = true;
+  state.error = '';
+  state.note = '';
+  render();
+  try {
+    const result = await seedDemo();
+    state.note = `Готово: «${result.objectName}», позиций ${result.positions}. `
+      + 'Данные только в этом браузере — их можно удалить очисткой данных сайта.';
+  } catch (error) {
+    state.error = error instanceof Error ? error.message : String(error);
+  }
+  state.seeding = false;
+  await mountDashboardPanel();
+}
+
 function bind(): void {
   const container = root();
   if (!container) return;
@@ -565,6 +603,10 @@ function bind(): void {
     state.showTable = !state.showTable;
     render();
   });
+  container.querySelector<HTMLButtonElement>('#pf-seed-demo')?.addEventListener('click', () => {
+    void runSeedDemo();
+  });
+
   container.querySelectorAll<HTMLButtonElement>('[data-pf-unit]').forEach((button) => {
     button.addEventListener('click', () => {
       state.unit = button.getAttribute('data-pf-unit') ?? '';
