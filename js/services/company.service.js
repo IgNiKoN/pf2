@@ -78,6 +78,57 @@
     return cleaned;
   }
 
+  /**
+   * Версия каталога модулей. Профили, сохранённые до появления новых модулей, не знают о них:
+   * например до «План/Факт СМР» в сохранённом наборе стояли только quality/construction/knowledge.
+   * Без миграции такой профиль навсегда остаётся без модуля, хотя компания его не выключала.
+   *
+   * Миграция добавляет только **новые** модули и не трогает осознанные выключения. После первого
+   * применения версия записывается, поэтому если админ потом выключит модуль — он останется выключенным.
+   */
+  var ENABLED_MODULES_VERSION = 2;
+  var ENABLED_MODULES_MIGRATIONS = [
+    { toVersion: 2, add: ['plan-fact'] }
+  ];
+
+  function _readVersion() {
+    var svc = _settingsSvc();
+    var raw = (svc && typeof svc.get === 'function')
+      ? svc.get('enabledModulesVersion')
+      : (window.appSettings ? window.appSettings.enabledModulesVersion : null);
+    var value = Number(raw);
+    return Number.isFinite(value) && value > 0 ? value : 1;
+  }
+
+  function _persistVersion(version) {
+    var svc = _settingsSvc();
+    if (svc && typeof svc.set === 'function') {
+      return Promise.resolve(svc.set('enabledModulesVersion', version)).then(function () { return true; });
+    }
+    if (window.appSettings) {
+      window.appSettings.enabledModulesVersion = version;
+      window.appSettings.settingsUpdatedAt = Date.now();
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(false);
+  }
+
+  /** Дополнить сохранённый набор модулями, которые появились после его сохранения. */
+  function _migrateOverride(override) {
+    if (override == null) return { modules: null, changed: false };
+    var version = _readVersion();
+    if (version >= ENABLED_MODULES_VERSION) return { modules: override, changed: false };
+    var modules = override.slice();
+    ENABLED_MODULES_MIGRATIONS.forEach(function (step) {
+      if (version >= step.toVersion) return;
+      step.add.forEach(function (id) {
+        if (modules.indexOf(id) < 0) modules.push(id);
+      });
+    });
+    var cleaned = _sanitizeEnabledModules(modules);
+    return { modules: cleaned == null ? modules : cleaned, changed: true };
+  }
+
   function _readOverride() {
     var svc = _settingsSvc();
     var raw = null;
@@ -202,7 +253,14 @@
 
     getCompany: function () {
       var override = _readOverride();
-      var enabled = override != null ? override : DEFAULT_ENABLED_MODULES.slice();
+      var migrated = _migrateOverride(override);
+      if (migrated.changed && migrated.modules) {
+        // Сохраняем один раз: дальше выбор админа (включая выключение) главнее миграции.
+        _persist(migrated.modules).then(function () {
+          return _persistVersion(ENABLED_MODULES_VERSION);
+        }).catch(function () { /* профиль только для чтения — переживём */ });
+      }
+      var enabled = migrated.modules != null ? migrated.modules : DEFAULT_ENABLED_MODULES.slice();
       return {
         id: COMPANY_ID,
         name: 'RBI',
@@ -221,6 +279,7 @@
       }
       return _persist(cleaned).then(function (ok) {
         if (!ok) return { error: 'persist_failed' };
+        _persistVersion(ENABLED_MODULES_VERSION).catch(function () {});
         _emit('company:enabledModulesChanged', { enabledModules: cleaned.slice() });
         return { error: null, enabledModules: cleaned.slice() };
       }).catch(function (e) {
