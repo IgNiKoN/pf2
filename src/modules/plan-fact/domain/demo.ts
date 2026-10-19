@@ -14,7 +14,6 @@
  */
 
 import { analyze } from './analyze.ts';
-import { setContour } from './contours.ts';
 import { formProfileById, normalizeContextOf, type FormProfile } from './profiles.ts';
 import { rawRowsFromSheets } from './reader.ts';
 import { saveImport } from './store.ts';
@@ -114,6 +113,8 @@ export async function seedDemo(objectName = 'Демо-объект: ЖК Сев�
   if (!api.locations?.createNode || !api.storage?.put) {
     throw new Error('Демо-данные недоступны: сервисы платформы не загрузились');
   }
+  // Сужаем тип один раз: внутри вложенных функций проверка выше уже не видна компилятору.
+  const storage = api.storage;
 
   const node = await api.locations.createNode({ nodeType: 'object', displayName: objectName });
   await api.objects?.rebuildFromLocations?.();
@@ -144,34 +145,56 @@ export async function seedDemo(objectName = 'Демо-объект: ЖК Сев�
     stats: analysis.stats
   });
 
-  // Контуры: договор = план, предложено чуть выше, РД — по каждой третьей позиции, приёмка — по каждой четвёртой.
+  // Контуры пишем **напрямую**: `setContour` проверяет права ПТО, а демо запускает любая роль
+  // (например «Инженер»), и через домен контуры молча не сохранялись — раздел выглядел пустым.
   const rows = await import('./store.ts').then((module) => module.listWorRows(node.id));
+  const contourStore = storeName('PLAN_FACT_QUANTITIES');
+  const putContour = async (row: { id: string }, kind: string, quantity: number): Promise<void> => {
+    await storage.put(contourStore, {
+      id: `pfqty_demo_${row.id}_${kind}`,
+      objectId: node.id,
+      worItemId: row.id,
+      kind,
+      quantity: String(quantity),
+      source: 'демо',
+      method: 'демо',
+      note: '',
+      updatedBy: 'Демо',
+      updatedAt: new Date().toISOString(),
+      syncStatus: 'pending'
+    });
+  };
   for (const [index, row] of rows.entries()) {
     const plan = Number(row.quantity);
-    await setContour({ worItemId: row.id, objectId: node.id, kind: 'CONTRACT', quantity: String(plan), source: 'демо' });
-    await setContour({
-      worItemId: row.id, objectId: node.id, kind: 'PROPOSED',
-      quantity: String(Math.round(plan * 1.05 * 100) / 100), source: 'демо'
+    const round = (value: number): number => Math.round(value * 100) / 100;
+    await putContour(row, 'CONTRACT', plan);
+    await putContour(row, 'PROPOSED', round(plan * (index % 5 === 0 ? 1.15 : 1.03)));
+    if (index % 3 === 0) await putContour(row, 'RD', round(plan * 1.12));
+    if (index % 4 === 0) await putContour(row, 'CUSTOMER_ACCEPTED', round(plan * 0.95));
+  }
+
+  // Предложение на утверждении — чтобы раздел «Утверждение» не выглядел пустым.
+  const proposalStore = storeName('PLAN_FACT_PROPOSALS');
+  const proposalRowStore = storeName('PLAN_FACT_PROPOSAL_ROWS');
+  const now = new Date().toISOString();
+  const proposalId = `pfprop_demo_${node.id}`;
+  await storage.put(proposalStore, {
+    id: proposalId, objectId: node.id, title: 'Демо: объёмы на утверждение', status: 'submitted',
+    submittedBy: 'Демо', submittedAt: now, decidedBy: '', decidedAt: null, decisionReason: '',
+    createdAt: now, updatedAt: now, syncStatus: 'pending'
+  });
+  for (const [index, row] of rows.slice(0, 6).entries()) {
+    await storage.put(proposalRowStore, {
+      id: `pfprow_demo_${index}_${row.id}`, proposalId, worItemId: row.id,
+      quantity: String(Number(row.quantity)), note: '', createdAt: now, updatedAt: now, syncStatus: 'pending'
     });
-    if (index % 3 === 0) {
-      await setContour({
-        worItemId: row.id, objectId: node.id, kind: 'RD',
-        quantity: String(Math.round(plan * 1.12 * 100) / 100), source: 'демо'
-      });
-    }
-    if (index % 4 === 0) {
-      await setContour({
-        worItemId: row.id, objectId: node.id, kind: 'CUSTOMER_ACCEPTED',
-        quantity: String(Math.round(plan * 0.95 * 100) / 100), source: 'демо'
-      });
-    }
   }
 
   // Факт прораба по части позиций — чтобы в сводке было выполнение, а не только план.
   const factsStore = storeName('PLAN_FACT_FACTS');
   for (const [index, row] of rows.entries()) {
     if (index % 4 !== 0) continue;
-    await api.storage.put(factsStore, {
+    await storage.put(factsStore, {
       id: `pffact_demo_${row.id}`,
       objectId: node.id,
       section: row.section,

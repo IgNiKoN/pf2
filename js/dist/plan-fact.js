@@ -4477,6 +4477,7 @@ async function seedDemo(objectName = "Демо-объект: ЖК Северны
   if (!((_a = api.locations) == null ? void 0 : _a.createNode) || !((_b = api.storage) == null ? void 0 : _b.put)) {
     throw new Error("Демо-данные недоступны: сервисы платформы не загрузились");
   }
+  const storage2 = api.storage;
   const node = await api.locations.createNode({ nodeType: "object", displayName: objectName });
   await ((_d = (_c = api.objects) == null ? void 0 : _c.rebuildFromLocations) == null ? void 0 : _d.call(_c));
   try {
@@ -4500,39 +4501,64 @@ async function seedDemo(objectName = "Демо-объект: ЖК Северны
     stats: analysis.stats
   });
   const rows = await Promise.resolve().then(() => store).then((module) => module.listWorRows(node.id));
+  const contourStore = storeName$1("PLAN_FACT_QUANTITIES");
+  const putContour = async (row, kind, quantity) => {
+    await storage2.put(contourStore, {
+      id: `pfqty_demo_${row.id}_${kind}`,
+      objectId: node.id,
+      worItemId: row.id,
+      kind,
+      quantity: String(quantity),
+      source: "демо",
+      method: "демо",
+      note: "",
+      updatedBy: "Демо",
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      syncStatus: "pending"
+    });
+  };
   for (const [index2, row] of rows.entries()) {
     const plan = Number(row.quantity);
-    await setContour({ worItemId: row.id, objectId: node.id, kind: "CONTRACT", quantity: String(plan), source: "демо" });
-    await setContour({
+    const round = (value) => Math.round(value * 100) / 100;
+    await putContour(row, "CONTRACT", plan);
+    await putContour(row, "PROPOSED", round(plan * (index2 % 5 === 0 ? 1.15 : 1.03)));
+    if (index2 % 3 === 0) await putContour(row, "RD", round(plan * 1.12));
+    if (index2 % 4 === 0) await putContour(row, "CUSTOMER_ACCEPTED", round(plan * 0.95));
+  }
+  const proposalStore = storeName$1("PLAN_FACT_PROPOSALS");
+  const proposalRowStore = storeName$1("PLAN_FACT_PROPOSAL_ROWS");
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  const proposalId = `pfprop_demo_${node.id}`;
+  await storage2.put(proposalStore, {
+    id: proposalId,
+    objectId: node.id,
+    title: "Демо: объёмы на утверждение",
+    status: "submitted",
+    submittedBy: "Демо",
+    submittedAt: now,
+    decidedBy: "",
+    decidedAt: null,
+    decisionReason: "",
+    createdAt: now,
+    updatedAt: now,
+    syncStatus: "pending"
+  });
+  for (const [index2, row] of rows.slice(0, 6).entries()) {
+    await storage2.put(proposalRowStore, {
+      id: `pfprow_demo_${index2}_${row.id}`,
+      proposalId,
       worItemId: row.id,
-      objectId: node.id,
-      kind: "PROPOSED",
-      quantity: String(Math.round(plan * 1.05 * 100) / 100),
-      source: "демо"
+      quantity: String(Number(row.quantity)),
+      note: "",
+      createdAt: now,
+      updatedAt: now,
+      syncStatus: "pending"
     });
-    if (index2 % 3 === 0) {
-      await setContour({
-        worItemId: row.id,
-        objectId: node.id,
-        kind: "RD",
-        quantity: String(Math.round(plan * 1.12 * 100) / 100),
-        source: "демо"
-      });
-    }
-    if (index2 % 4 === 0) {
-      await setContour({
-        worItemId: row.id,
-        objectId: node.id,
-        kind: "CUSTOMER_ACCEPTED",
-        quantity: String(Math.round(plan * 0.95 * 100) / 100),
-        source: "демо"
-      });
-    }
   }
   const factsStore = storeName$1("PLAN_FACT_FACTS");
   for (const [index2, row] of rows.entries()) {
     if (index2 % 4 !== 0) continue;
-    await api.storage.put(factsStore, {
+    await storage2.put(factsStore, {
       id: `pffact_demo_${row.id}`,
       objectId: node.id,
       section: row.section,
