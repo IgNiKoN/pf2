@@ -7922,9 +7922,9 @@ function renderPlanFact() {
   if (state.objectId && !objects.some((item) => item.id === state.objectId)) state.objectId = "";
   if (!state.objectId && objects.length) state.objectId = objects[0].id;
   const objectFreeSection = state.tab === "works" || state.tab === "summary";
-  root2.innerHTML = headerHtml() + objectsHtml(objects) + tabsHtml() + ((objects.length || objectFreeSection) && !objectFreeSection ? routeHtml() : "") + (objects.length || objectFreeSection ? bodyHtml(objects) : emptyBodyHtml());
+  root2.innerHTML = headerHtml() + objectsHtml(objects) + tabsHtml() + (objects.length ? routeHtml() : "") + (objects.length || objectFreeSection ? bodyHtml(objects) : emptyBodyHtml());
   bind(root2);
-  if (objects.length && !objectFreeSection) void refreshRoute();
+  if (objects.length) void refreshRoute();
   if (state.tab === "works") void mountWorksPanel();
   if (state.tab === "summary") void mountDashboardPanel();
   if (!objects.length) return;

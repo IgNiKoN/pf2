@@ -517,10 +517,12 @@ export function renderPlanFact(): void {
   // сводка — по всем видимым объектам сразу.
   const objectFreeSection = state.tab === 'works' || state.tab === 'summary';
   root.innerHTML = headerHtml() + objectsHtml(objects) + tabsHtml()
-    + ((objects.length || objectFreeSection) && !objectFreeSection ? routeHtml() : '')
+    + (objects.length ? routeHtml() : '')
     + (objects.length || objectFreeSection ? bodyHtml(objects) : emptyBodyHtml());
   bind(root);
-  if (objects.length && !objectFreeSection) void refreshRoute();
+  // Маршрут нужен на всех разделах, включая «Сводку»: именно с неё начинают новый человек
+  // и ему надо видеть, что дальше — ВОР, затем Контуры.
+  if (objects.length) void refreshRoute();
 
   if (state.tab === 'works') void mountWorksPanel();
   if (state.tab === 'summary') void mountDashboardPanel();
